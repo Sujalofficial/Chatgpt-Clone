@@ -39,8 +39,9 @@ export default function FileUpload({ onUploadComplete, onPreview }: FileUploadPr
         setUploadProgress(prev => (prev < 90 ? prev + 10 : prev));
       }, 200);
 
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001';
       const token = session?.access_token || manualSession?.access_token;
-      const resp = await fetch('http://127.0.0.1:5001/api/upload', {
+      const resp = await fetch(`${API_BASE}/api/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

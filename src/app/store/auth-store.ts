@@ -63,8 +63,9 @@ export const useAuthStore = create<AuthStore>()(
         const token = state.session?.access_token || state.manualSession?.access_token;
         if (!token) return;
 
+        const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5001';
         try {
-          const resp = await fetch('http://127.0.0.1:5001/api/user/profile', {
+          const resp = await fetch(`${API_BASE}/api/user/profile`, {
             headers: { 'Authorization': `Bearer ${token}` },
           });
           if (resp.ok) {
@@ -78,8 +79,9 @@ export const useAuthStore = create<AuthStore>()(
         const token = state.session?.access_token || state.manualSession?.access_token;
         if (!token) return;
 
+        const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5001';
         try {
-          const resp = await fetch('http://127.0.0.1:5001/api/user/update', {
+          const resp = await fetch(`${API_BASE}/api/user/update`, {
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',

@@ -25,7 +25,6 @@ import {
   ArrowUp,
   LogOut,
   Pin,
-  Share,
   MoreHorizontal
 } from 'lucide-react';
 
@@ -475,6 +474,7 @@ function ChatSidebarItem({
   pinChat: (id: string) => void;
   renameChat: (id: string, title: string) => void;
   setSidebarOpen: (open: boolean) => void;
+  pagination?: any;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [tempTitle, setTempTitle] = useState(chat.title);

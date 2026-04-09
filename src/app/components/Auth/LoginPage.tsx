@@ -47,7 +47,8 @@ export default function LoginPage({ onToggle }: LoginPageProps) {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://127.0.0.1:5001/auth/google';
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+    window.location.href = `${API_BASE}/auth/google`;
   };
 
   return (

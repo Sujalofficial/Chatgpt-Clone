@@ -21,7 +21,8 @@ export default function ProfileModal({ onClose }: ProfileModalProps) {
       const formData = new FormData();
       formData.append('file', file);
 
-      const resp = await fetch('http://127.0.0.1:5001/api/upload', {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const resp = await fetch(`${API_BASE}/api/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${manualSession}`,
@@ -79,7 +80,7 @@ export default function ProfileModal({ onClose }: ProfileModalProps) {
             <div className="relative group">
               <div className="w-32 h-32 rounded-[2.5rem] overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-4xl font-black text-primary shadow-2xl ring-4 ring-white dark:ring-slate-800 rotate-3">
                 {profile?.profilePic ? (
-                  <img src={`http://127.0.0.1:5001${profile.profilePic}`} alt="Profile" className="w-full h-full object-cover" />
+                  <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}${profile.profilePic}`} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   user?.email?.charAt(0).toUpperCase()
                 )}

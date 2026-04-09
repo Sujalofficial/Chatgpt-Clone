@@ -27,7 +27,8 @@ export default function SignupPage({ onToggle }: SignupPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const resp = await fetch('http://127.0.0.1:5001/api/auth/signup', {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const resp = await fetch(`${API_BASE}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }),
@@ -47,7 +48,8 @@ export default function SignupPage({ onToggle }: SignupPageProps) {
   };
 
   const handleGoogleSignup = () => {
-    window.location.href = 'http://127.0.0.1:5001/auth/google';
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+    window.location.href = `${API_BASE}/auth/google`;
   };
 
   return (

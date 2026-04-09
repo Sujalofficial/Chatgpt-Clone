@@ -48,6 +48,7 @@ interface ChatStore {
   copyFullChat: () => void;
   copyMessage: (content: string) => void;
   loadChat: (chatId: string) => Promise<void>;
+  pagination?: any;
 }
 
 /* ─── Build full conversation history for multi-turn context ────────────── */
