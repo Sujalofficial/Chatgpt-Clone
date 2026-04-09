@@ -69,6 +69,7 @@ const start = async () => {
   try {
     if (config.MONGO_URI) {
       const cleanUri = config.MONGO_URI.trim();
+      console.log(`🔍 DEBUG: Connection string starts with: "${cleanUri.substring(0, 10)}..."`);
       await mongoose.connect(cleanUri);
       console.log('✅ MongoDB connected');
     } else {
