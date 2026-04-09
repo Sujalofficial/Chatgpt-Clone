@@ -53,6 +53,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/user', userRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+app.get('/', (_, res) => res.send('🚀 Synapse AI Orchestrator is LIVE and Healthy.'));
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 
 /* ─── Error handler (must be last) ───────────────────────── */
