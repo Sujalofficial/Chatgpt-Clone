@@ -10,9 +10,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const userRoutes = require('./routes/userRoutes');
 const { errorHandler } = require('./middleware/errorHandler');
 const { rateLimiter } = require('./middleware/rateLimiter');
-
 const passport = require('passport');
-const authRoutes = require('./routes/auth');
 require('./config/passport');
 
 // Prevent Vercel AI SDK unhandled internal rejections (from 429 rate limits) from crashing the server
