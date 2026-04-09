@@ -4,7 +4,12 @@ require('dotenv').config();
 const envSchema = z.object({
   PORT: z.string().default('5000').transform(Number),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  MONGO_URI: z.string().optional(),
+  MONGO_URI: z.string().optional().transform(v => {
+    if (!v) return v;
+    // Aggressively find the start of the real URI and strip garbage
+    const match = v.match(/(mongodb(?:\+srv)?:\/\/.+)/);
+    return match ? match[1].trim() : v.trim();
+  }),
   GROQ_API_KEY: z.string().min(1, 'GROQ_API_KEY is required'),
   GEMINI_API_KEY: z.string().optional(),
   GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
