@@ -14,8 +14,7 @@ export default function AuthPage() {
           <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[42%] bg-indigo-500/10 blur-[130px] rounded-full delay-1000 animate-pulse transition-all duration-1000"></div>
           <div className="absolute top-[20%] right-[10%] w-[15%] h-[15%] bg-emerald-500/10 rounded-full blur-[90px] animate-bounce duration-[15s]"></div>
           
-          {/* Abstract Grid Path */}
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+          {/* Abstract Grid Path - Cleaned */}
           <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07]" 
                style={{ backgroundImage: `radial-gradient(var(--color-primary) 0.5px, transparent 0.5px)`, backgroundSize: '24px 24px' }}></div>
       </div>

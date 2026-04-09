@@ -24,7 +24,10 @@ const chatRateLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, 
   max: 60,
   keyGenerator: (req) => req.user?.id || req.ip,
-  validate: { trustProxy: false },
+  validate: { 
+    default: false,
+    trustProxy: false 
+  },
   handler: (req, res) => {
     res.status(429).json({
       success: false,

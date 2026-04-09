@@ -105,8 +105,10 @@ export const useChatStore = create<ChatStore>()(
   persist(
     (set, get) => ({
       models: [
-        { id: 'gemini', name: 'Gemini 2.5 Flash', color: '#4285f4', icon: '✨' },
-        { id: 'groq',   name: 'Groq (Llama 3.3)',  color: '#8b5cf6', icon: '🔥' },
+        { id: 'gemini',   name: 'Gemini 2.5 Flash', color: '#4285f4', icon: '✨' },
+        { id: 'groq',     name: 'Groq (Llama 3.3)',  color: '#8b5cf6', icon: '🔥' },
+        { id: 'openai',   name: 'OpenAI (GPT-4o)',   color: '#10a37f', icon: '🤖' },
+        { id: 'deepseek', name: 'DeepSeek-V3',      color: '#0000ff', icon: '🧠' },
       ],
       selectedModels: ['gemini', 'groq'],
       history: [],
@@ -181,7 +183,15 @@ export const useChatStore = create<ChatStore>()(
           const resp = await fetch(url, {
             headers: { 'Authorization': `Bearer ${token}` },
           });
-          if (resp.ok) set({ history: await resp.json() });
+          if (resp.ok) {
+            const result = await resp.json();
+            // Handle the new production-ready wrapper { success, data, pagination }
+            const historyData = result.data || result; 
+            set({ 
+              history: Array.isArray(historyData) ? historyData : [],
+              pagination: result.pagination || null
+            });
+          }
         } catch (err) { console.error('Fetch history failed', err); }
       },
 
@@ -248,7 +258,8 @@ export const useChatStore = create<ChatStore>()(
           });
 
           if (resp.ok) {
-            const fullChat = await resp.json();
+            const result = await resp.json();
+            const fullChat = result.data || result;
             const columns = fullChat.columns || {};
             
             // Comprehensive Merge & Deduplicate
