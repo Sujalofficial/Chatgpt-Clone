@@ -1,4 +1,10 @@
+const express = require('express');
+const router = express.Router();
+const { upload } = require('../services/uploadService');
+const { verifyToken } = require('../middleware/verifyToken');
+const { extractText } = require('../services/pdfService');
 const storageService = require('../services/storageService');
+const { logger } = require('../utils/logger');
 
 router.post('/', verifyToken, upload.single('file'), async (req, res) => {
   if (!req.file) {

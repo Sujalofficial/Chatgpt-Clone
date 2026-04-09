@@ -18,7 +18,10 @@ const getRateLimiter = (options) => {
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: (req) => req.user?.id || req.ip,
-    validate: { xForwardedForHeader: false }, // Silences the IPv6 configuration warning
+    validate: { 
+      default: false,
+      xForwardedForHeader: false 
+    },
     handler: (req, res) => {
 
       logger.warn({ userId: req.user?.id, ip: req.ip }, 'Rate limit exceeded');
