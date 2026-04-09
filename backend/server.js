@@ -68,7 +68,8 @@ const PORT = config.PORT;
 const start = async () => {
   try {
     if (config.MONGO_URI) {
-      await mongoose.connect(config.MONGO_URI);
+      const cleanUri = config.MONGO_URI.trim();
+      await mongoose.connect(cleanUri);
       console.log('✅ MongoDB connected');
     } else {
       console.log('⚠️  MONGO_URI not set — running without DB');
