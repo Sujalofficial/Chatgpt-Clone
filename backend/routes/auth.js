@@ -18,19 +18,22 @@ router.get('/google', passport.authenticate('google', {
     session: false 
 }));
 
-router.get('/google/callback', 
-    passport.authenticate('google', { 
-        failureRedirect: `${CLIENT_URL}/login?error=auth_failed`,
-        session: false 
-    }), 
-    (req, res) => {
+router.get('/google/callback', (req, res, next) => {
+    passport.authenticate('google', { session: false }, (err, user, info) => {
+        if (err || !user) {
+            return res.redirect(`${CLIENT_URL}/login?error=auth_failed`);
+        }
+        
         // On success, generate JWT
-        const user = req.user;
-        const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign(
+            { id: user._id, email: user.email }, 
+            JWT_SECRET, 
+            { expiresIn: '7d' }
+        );
         
         // Redirect to frontend with token
         res.redirect(`${CLIENT_URL}/auth-callback?token=${token}&userId=${user._id}`);
-    }
-);
+    })(req, res, next);
+});
 
 module.exports = router;
