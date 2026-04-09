@@ -92,33 +92,13 @@ This prevents **"Zombie Streams"** which generate and bill for tokens that are n
 
 ---
 
-## 🚨 Production Gaps (Brutally Honest)
-1. **No Queue System**: Sudden traffic spikes will hit the Express event loop hard; needs **BullMQ**.
-2. **Local File Storage**: PDF uploads live on the server disk; needs migration to **AWS S3**.
-3. **No Circuit Breaker**: If Gemini is down, the system still tries to call it; needs **Hystrix** pattern.
-4. **Testing**: Lacks high-coverage E2E testing for the streaming chunks.
-
 ---
 
----
-
-## 📈 Scalability Considerations
-The platform is built to handle millions of users with horizontal scalability in mind:
-- **Pagination**: All history endpoints implement skip-based pagination to prevent memory exhaustion.
-- **Stateless JWT Auth**: Removed server-side sessions, allowing the backend to be replicated across N server instances without sync issues.
-- **Pluggable AI Models**: Highly modular service architecture; adding new models like OpenAI or DeepSeek requires zero changes to core orchestrator logic.
-- **Redis Distrubuted State**: Rate limiting and caching are backed by Redis, ensuring global consistency across the cluster.
-
-## ⚠️ Known Limitations
-Currently uses local storage for file uploads for simplicity. In production, this should be replaced with cloud storage solutions like AWS S3 or Google Cloud Storage to support stateless horizontal scaling.
-
----
-
-## 🧪 Setup Instructions
+## 🏗️ Setup Instructions
 1. `cd backend && npm install`
 2. Configure `.env` (Use the provided `config.js` for mandatory keys).
 3. `npm run dev` (Starts backend on 5001).
-4. `cd .. && npm install && npm run dev` (Starts frontend).
+4. `npm run dev` (Starts frontend from the root directory).
 
 ---
 
