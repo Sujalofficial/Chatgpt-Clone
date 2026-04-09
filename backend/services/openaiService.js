@@ -7,10 +7,6 @@ const { logger } = require('../utils/logger');
  * Comprehensive wrapper for OpenAI Chat Completion (Streaming)
  */
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 /**
  * generateStream
  * @param {Array} messages - [{role, content}]
@@ -19,9 +15,13 @@ const openai = new OpenAI({
  */
 const generateStream = async (messages, systemPrompt, options = {}) => {
   try {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not configured');
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      throw new Error('OPENAI_API_KEY is not configured in .env');
     }
+
+    // Lazy initialization to prevent startup crashes
+    const openai = new OpenAI({ apiKey });
 
     const chatMessages = [
       { role: 'system', content: systemPrompt },
@@ -29,7 +29,7 @@ const generateStream = async (messages, systemPrompt, options = {}) => {
     ];
 
     const stream = await openai.chat.completions.create({
-      model: 'gpt-4o', // Default to 4o for production readiness
+      model: 'gpt-4o', 
       messages: chatMessages,
       stream: true,
     }, { signal: options.signal });
