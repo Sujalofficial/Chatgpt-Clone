@@ -13,15 +13,24 @@ router.post('/signup', validate(schemas.auth), signup);
 router.post('/login',  validate(schemas.auth), login);
 
 // GOOGLE AUTH ROUTES
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', passport.authenticate('google', { 
+    scope: ['profile', 'email'],
+    session: false 
+}));
 
-router.get('/google/callback', passport.authenticate('google', { failureRedirect: `${CLIENT_URL}/login?error=auth_failed` }), (req, res) => {
-    // On success, generate JWT
-    const user = req.user;
-    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-    
-    // Redirect to frontend with token — using query param for simple integration
-    res.redirect(`${CLIENT_URL}/auth-callback?token=${token}&userId=${user._id}`);
-});
+router.get('/google/callback', 
+    passport.authenticate('google', { 
+        failureRedirect: `${CLIENT_URL}/login?error=auth_failed`,
+        session: false 
+    }), 
+    (req, res) => {
+        // On success, generate JWT
+        const user = req.user;
+        const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+        
+        // Redirect to frontend with token
+        res.redirect(`${CLIENT_URL}/auth-callback?token=${token}&userId=${user._id}`);
+    }
+);
 
 module.exports = router;

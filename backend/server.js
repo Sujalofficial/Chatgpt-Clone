@@ -12,8 +12,7 @@ const { errorHandler } = require('./middleware/errorHandler');
 const { rateLimiter } = require('./middleware/rateLimiter');
 
 const passport = require('passport');
-const session = require('express-session');
-const cookieParser = require('cookie-parser');
+const authRoutes = require('./routes/auth');
 require('./config/passport');
 
 // Prevent Vercel AI SDK unhandled internal rejections (from 429 rate limits) from crashing the server
@@ -43,7 +42,6 @@ app.use(requestLogger);
 app.use(cors({ origin: [config.CLIENT_URL], credentials: true }));
 
 app.use(express.json());
-app.use(cookieParser());
 
 // Pure stateless Passport integration — no sessions
 app.use(passport.initialize());
