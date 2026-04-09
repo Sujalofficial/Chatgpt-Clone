@@ -43,5 +43,8 @@ passport.use(new GoogleStrategy({
   }
 ));
 
-// Serializers not needed for stateless JWT auth
+// Required even for stateless auth to prevent accidental session-related crashes
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((user, done) => done(null, user));
+
 module.exports = passport;
