@@ -1,16 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-interface SettingsState {
-  theme: 'dark' | 'light';
-  defaultModel: string;
-  streaming: boolean;
-  setTheme: (theme: 'dark' | 'light') => void;
-  setDefaultModel: (model: string) => void;
-  setStreaming: (val: boolean) => void;
-}
-
-export const useSettingsStore = create<SettingsState>()(
+export const useSettingsStore = create()(
   persist(
     (set) => ({
       theme: 'dark',

@@ -7,23 +7,9 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIU
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-import type { Session, User } from '@supabase/supabase-js';
 import { API_BASE } from '../config';
 
-interface AuthStore {
-  session: Session | null;
-  user: User | null;
-  manualSession: { access_token: string; user: any } | null;
-  profile: any | null;
-  loading: boolean;
-  initialize: () => Promise<void>;
-  signOut: () => Promise<void>;
-  syncProfile: () => Promise<void>;
-  updateProfile: (data: { name?: string; profilePic?: string }) => Promise<void>;
-  setSessionFromPassport: (token: string, user: any) => void;
-}
-
-export const useAuthStore = create<AuthStore>()(
+export const useAuthStore = create()(
   persist(
     (set, get) => ({
       session: null,
@@ -33,13 +19,11 @@ export const useAuthStore = create<AuthStore>()(
       loading: true,
 
       initialize: async () => {
-        // First check Supabase
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           set({ session, user: session.user, loading: false });
           get().syncProfile();
         } else if (get().manualSession) {
-          // If no Supabase but manual exists
           set({ user: get().manualSession?.user || null, loading: false });
           get().syncProfile();
         } else {

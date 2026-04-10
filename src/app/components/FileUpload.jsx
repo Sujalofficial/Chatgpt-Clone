@@ -3,25 +3,20 @@ import { Image, FileText, Video, Music, Paperclip, Loader2, X } from 'lucide-rea
 import { useAuthStore } from '../store/auth-store';
 import { API_BASE } from '../config';
 
-interface FileUploadProps {
-  onUploadComplete: (url: string, result?: any) => void;
-  onPreview: (url: string | null, type?: 'image' | 'pdf' | 'video' | 'audio') => void;
-}
-
-export default function FileUpload({ onUploadComplete, onPreview }: FileUploadProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+export default function FileUpload({ onUploadComplete, onPreview }) {
+  const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { session, manualSession } = useAuthStore();
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     // Show local preview
     const localUrl = URL.createObjectURL(file);
-    let type: 'image' | 'pdf' | 'video' | 'audio' = 'image';
+    let type = 'image';
     if (file.type.includes('pdf')) type = 'pdf';
     else if (file.type.includes('video')) type = 'video';
     else if (file.type.includes('audio')) type = 'audio';
@@ -111,7 +106,7 @@ export default function FileUpload({ onUploadComplete, onPreview }: FileUploadPr
                 className="flex items-center gap-3 w-full p-2.5 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all group"
               >
                 <div className={`p-2 rounded-lg ${item.bg} ${item.color} group-hover:scale-105 transition-transform`}>
-                  <item.icon className="w-4 h-4 shadow-sm" />
+                   <item.icon className="w-4 h-4 shadow-sm" />
                 </div>
                 <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-tight">{item.label}</span>
               </button>

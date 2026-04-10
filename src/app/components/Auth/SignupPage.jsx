@@ -12,19 +12,15 @@ const GoogleIcon = () => (
   </svg>
 );
 
-interface SignupPageProps {
-  onToggle: () => void;
-}
-
-export default function SignupPage({ onToggle }: SignupPageProps) {
+export default function SignupPage({ onToggle }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -36,7 +32,7 @@ export default function SignupPage({ onToggle }: SignupPageProps) {
       });
       if (resp.ok) {
         const { token, user } = await resp.json();
-        (useAuthStore.getState() as any).setSessionFromPassport(token, user);
+        useAuthStore.getState().setSessionFromPassport(token, user);
       } else {
         const err = await resp.json();
         setError(err.message || 'Signup failed');

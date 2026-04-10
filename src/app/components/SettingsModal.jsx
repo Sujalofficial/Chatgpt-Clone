@@ -1,11 +1,7 @@
 import { useSettingsStore } from '../store/settings-store';
 import { X, Moon, Sun, Cpu, Zap } from 'lucide-react';
 
-interface SettingsModalProps {
-  onClose: () => void;
-}
-
-export default function SettingsModal({ onClose }: SettingsModalProps) {
+export default function SettingsModal({ onClose }) {
   const { theme, setTheme, defaultModel, setDefaultModel, streaming, setStreaming } = useSettingsStore();
 
   return (

@@ -4,55 +4,8 @@ import { supabase } from './auth-store';
 
 import { API_URL } from '../config';
 
-/* ─── Types ─────────────────────────────────────────────────────────────── */
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  model?: string;
-  error?: boolean;
-}
-
-interface ModelDef {
-  id: string;
-  name: string;
-  color: string;
-  icon: string;
-}
-
-interface ChatInstance {
-  _id: string;
-  title: string;
-  isPinned?: boolean;
-  updatedAt: string;
-}
-
-interface ChatStore {
-  models: ModelDef[];
-  selectedModels: string[];
-  history: ChatInstance[];
-  currentChatId: string | null;
-  messages: Message[];
-  cachedChats: Record<string, Message[]>; // Optimization: Instant switching
-  isGenerating: boolean;
-  isLoadingChat: boolean;
-  toggleModel: (modelId: string) => void;
-  sendMessage: (prompt: string, image?: string | null, pdfText?: string | null) => Promise<void>;
-  clearMessages: () => void;
-  fetchHistory: () => Promise<void>;
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
-  pinChat: (chatId: string) => Promise<void>;
-  renameChat: (chatId: string, title: string) => Promise<void>;
-  deleteChat: (chatId: string) => Promise<void>;
-  copyFullChat: () => void;
-  copyMessage: (content: string) => void;
-  loadChat: (chatId: string) => Promise<void>;
-  pagination?: any;
-}
-
 /* ─── Build full conversation history for multi-turn context ────────────── */
-const buildHistory = (messages: Message[]): { role: string; content: string }[] => {
+const buildHistory = (messages) => {
   return messages
     .filter(m => m.content.trim().length > 0 && !m.error)
     .map(m => ({
@@ -63,10 +16,10 @@ const buildHistory = (messages: Message[]): { role: string; content: string }[] 
 
 /* ─── Parse SSE stream robustly ─────────────────────────────────────────── */
 const parseSSE = async (
-  resp: Response,
-  onToken: (text: string) => void,
-  onError: (msg: string) => void,
-  onChatId?: (id: string) => void
+  resp,
+  onToken,
+  onError,
+  onChatId
 ) => {
   if (!resp.body) { onError('No response body'); return; }
 
@@ -94,7 +47,7 @@ const parseSSE = async (
         if (data.chatId && onChatId) onChatId(data.chatId);
         if (data.text) onToken(data.text);
         if (data.error) onError(data.error);
-      } catch {
+      } catch (err) {
         // Malformed chunk — skip
       }
     }
@@ -102,7 +55,7 @@ const parseSSE = async (
 };
 
 /* ─── Store ─────────────────────────────────────────────────────────────── */
-export const useChatStore = create<ChatStore>()(
+export const useChatStore = create()(
   persist(
     (set, get) => ({
       models: [
@@ -166,7 +119,7 @@ export const useChatStore = create<ChatStore>()(
         navigator.clipboard.writeText(markdown);
       },
 
-      copyMessage: (content: string) => {
+      copyMessage: (content) => {
         navigator.clipboard.writeText(content);
       },
 
@@ -186,7 +139,6 @@ export const useChatStore = create<ChatStore>()(
           });
           if (resp.ok) {
             const result = await resp.json();
-            // Handle the new production-ready wrapper { success, data, pagination }
             const historyData = result.data || result; 
             set({ 
               history: Array.isArray(historyData) ? historyData : [],
@@ -229,7 +181,6 @@ export const useChatStore = create<ChatStore>()(
             get().clearMessages();
           }
 
-          // Clean up cache
           const newCache = { ...get().cachedChats };
           delete newCache[chatId];
           set({ cachedChats: newCache });
@@ -241,7 +192,6 @@ export const useChatStore = create<ChatStore>()(
       loadChat: async (chatId) => {
         const { cachedChats } = get();
 
-        // Instant switch from cache
         if (cachedChats[chatId]) {
           set({ currentChatId: chatId, messages: cachedChats[chatId], isLoadingChat: false });
         } else {
@@ -263,11 +213,10 @@ export const useChatStore = create<ChatStore>()(
             const fullChat = result.data || result;
             const columns = fullChat.columns || {};
             
-            // Comprehensive Merge & Deduplicate
-            const mergedMap = new Map<string, Message>();
+            const mergedMap = new Map();
             
             Object.entries(columns).forEach(([modelId, modelMessages]) => {
-              (modelMessages as any[]).forEach((msg, index) => {
+              modelMessages.forEach((msg, index) => {
                 const msgKey = msg.role === 'user' 
                   ? `user-${index}-${msg.content.substring(0, 50)}` 
                   : `${modelId}-${index}-${msg.id || Date.now()}`;
@@ -300,19 +249,18 @@ export const useChatStore = create<ChatStore>()(
         const { selectedModels, messages } = get();
         if (!prompt.trim() && !image) return;
 
-        // 1. Prepare messages
-        const userMsg: Message = {
+        const userMsg = {
           id: `user-${Date.now()}`,
           role: 'user',
           content: prompt.trim(),
         };
         
-        const responseIds: Record<string, string> = {};
+        const responseIds = {};
         selectedModels.forEach(mId => {
           responseIds[mId] = `${mId}-${Date.now()}`;
         });
 
-        const placeholders: Message[] = selectedModels.map(mId => ({
+        const placeholders = selectedModels.map(mId => ({
           id: responseIds[mId],
           role: 'assistant',
           content: '',
@@ -322,7 +270,6 @@ export const useChatStore = create<ChatStore>()(
         const updatedMessages = [...messages, userMsg, ...placeholders];
         set({ messages: updatedMessages, isGenerating: true });
 
-        // Build history for API
         const fullHistory = buildHistory([...messages, userMsg]);
 
         try {
@@ -341,7 +288,7 @@ export const useChatStore = create<ChatStore>()(
                 body: JSON.stringify({ 
                   model: modelId, 
                   messages: fullHistory,
-                  chatId: get().currentChatId, // Use fresh ID from store
+                  chatId: get().currentChatId,
                   image: image,
                   file: image,
                   hasFile: !!image,
@@ -387,12 +334,11 @@ export const useChatStore = create<ChatStore>()(
                   }
                 }
               );
-            } catch (err: any) {
+            } catch (err) {
               console.error(`[${modelId}] fetch error:`, err);
             }
           }));
 
-          // Final update cache
           const finalMessages = get().messages;
           const finalChatId = get().currentChatId;
           if (finalChatId) {
@@ -411,7 +357,7 @@ export const useChatStore = create<ChatStore>()(
       name: 'synapse-ai-v3',
       partialize: (state) => ({
         selectedModels: state.selectedModels,
-        cachedChats: state.cachedChats, // Persist cache for offline/reload support
+        cachedChats: state.cachedChats,
       }),
     }
   )

@@ -11,8 +11,7 @@ export default function AuthCallback() {
     const userId = searchParams.get('userId');
 
     if (token && userId) {
-      // Manually set session info in store
-      (useAuthStore.getState() as any).setSessionFromPassport(token, { id: userId });
+      useAuthStore.getState().setSessionFromPassport(token, { id: userId });
       navigate('/');
     } else {
       navigate('/login?error=invalid_callback');

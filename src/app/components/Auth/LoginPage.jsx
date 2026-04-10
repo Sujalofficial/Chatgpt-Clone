@@ -12,20 +12,16 @@ const GoogleIcon = () => (
   </svg>
 );
 
-interface LoginPageProps {
-  onToggle: () => void;
-}
-
-export default function LoginPage({ onToggle }: LoginPageProps) {
+export default function LoginPage({ onToggle }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -37,8 +33,7 @@ export default function LoginPage({ onToggle }: LoginPageProps) {
       });
       if (resp.ok) {
         const { token, user } = await resp.json();
-        // Manually set in store (I will update auth-store later)
-        (useAuthStore.getState() as any).setSessionFromPassport(token, user);
+        useAuthStore.getState().setSessionFromPassport(token, user);
       } else {
         const err = await resp.json();
         setError(err.message || 'Login failed');
@@ -54,7 +49,7 @@ export default function LoginPage({ onToggle }: LoginPageProps) {
     window.location.href = `${AUTH_URL}/google`;
   };
 
-  const handleForgot = async (e: React.FormEvent) => {
+  const handleForgot = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);

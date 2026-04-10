@@ -3,17 +3,13 @@ import { useAuthStore } from '../store/auth-store';
 import { X, Camera, User as UserIcon, Mail, Check, Loader2 } from 'lucide-react';
 import { API_BASE } from '../config';
 
-interface ProfileModalProps {
-  onClose: () => void;
-}
-
-export default function ProfileModal({ onClose }: ProfileModalProps) {
+export default function ProfileModal({ onClose }) {
   const { user, profile, updateProfile, manualSession } = useAuthStore();
   const [name, setName] = useState(profile?.name || '');
   const [isUpdating, setIsUpdating] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const handlePfpUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePfpUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 

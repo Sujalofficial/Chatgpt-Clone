@@ -51,15 +51,15 @@ export default function App() {
 
   const [showSettings, setShowSettings] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [activeFileUrl, setActiveFileUrl] = useState<string | null>(null);
-  const [extractedText, setExtractedText] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewType, setPreviewType] = useState<'image' | 'pdf' | 'audio' | 'video'>('image');
+  const [activeFileUrl, setActiveFileUrl] = useState(null);
+  const [extractedText, setExtractedText] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewType, setPreviewType] = useState('image');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   
-  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef(null);
 
   // Sync theme with HTML class
   useEffect(() => {
@@ -88,7 +88,7 @@ export default function App() {
     if (user) fetchHistory();
   }, [user, fetchHistory]);
 
-  const speak = (text: string) => {
+  const speak = (text) => {
     if (isSpeaking) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
@@ -101,14 +101,14 @@ export default function App() {
   };
 
   const startListening = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("Voice input not supported in this browser.");
       return;
     }
     const recognition = new SpeechRecognition();
     recognition.onstart = () => setIsListening(true);
-    recognition.onresult = (e: any) => {
+    recognition.onresult = (e) => {
       const transcript = e.results[0][0].transcript;
       const textarea = document.querySelector('textarea');
       if (textarea) textarea.value += transcript;
@@ -160,7 +160,7 @@ export default function App() {
 
           <div className="flex-1 overflow-y-auto mt-4 space-y-1 custom-scrollbar scrollbar-none">
             <div className="px-2 text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-white/30 mb-2">Recents</div>
-            {history.map((chat: any) => (
+            {history.map((chat) => (
               <ChatSidebarItem 
                 key={chat._id} 
                 chat={chat} 
@@ -213,7 +213,7 @@ export default function App() {
                   <ChevronDown className="w-4 h-4 opacity-40 ml-0.5" />
                 </button>
                 <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-[#2f2f2f] border border-slate-200 dark:border-white/5 rounded-xl shadow-2xl p-2 hidden group-hover:block transition-all animate-in fade-in zoom-in-95 duration-200 z-50">
-                   {models.map((m: any) => (
+                   {models.map((m) => (
                       <div key={m.id} onClick={() => useChatStore.getState().toggleModel(m.id)} className={`flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 ${selectedModels.includes(m.id) ? 'text-emerald-500' : 'text-slate-400'}`}>
                         <div className="flex items-center gap-3">
                            <span className="text-base">{m.icon}</span>
@@ -282,7 +282,7 @@ export default function App() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-16 py-12 px-4 w-full">
-                   {messages.reduce((acc: any[], msg: any) => {
+                   {messages.reduce((acc, msg) => {
                      if (msg.role === 'user') {
                        acc.push({ userMsg: msg, replies: [] });
                      } else if (msg.role === 'assistant') {
@@ -290,7 +290,7 @@ export default function App() {
                        else acc.push({ userMsg: null, replies: [msg] });
                      }
                      return acc;
-                   }, []).map((turn: any, i: number) => (
+                   }, []).map((turn, i) => (
                      <div key={i} className="flex flex-col gap-10 w-full animate-message">
                        {turn.userMsg && (
                          <div className="flex justify-end">
@@ -309,11 +309,11 @@ export default function App() {
    
                        {turn.replies.length > 0 && (
                          <div className={`grid grid-cols-1 ${selectedModels.length > 1 ? 'md:grid-cols-2' : ''} gap-6 w-full`}>
-                           {selectedModels.map((modelId: any) => {
-                              const aiMsg = turn.replies.find((m: any) => m.model === modelId);
+                           {selectedModels.map((modelId) => {
+                              const aiMsg = turn.replies.find((m) => m.model === modelId);
                               if (!aiMsg && !isGenerating) return null;
                               const msgToRender = aiMsg || { content: '', id: `loading-${modelId}` };
-                              const modelDef = models.find((m: any) => m.id === modelId);
+                              const modelDef = models.find((m) => m.id === modelId);
                               
                               return (
                                  <div key={modelId} className="ai-card w-full flex flex-col p-7 group/msg">
@@ -410,7 +410,7 @@ export default function App() {
                     className="w-full bg-transparent border-none text-[15px] font-medium placeholder-slate-500 dark:placeholder-slate-400 resize-none px-2 pt-2.5 pb-2.5 focus:ring-0 outline-none max-h-52 leading-tight"
                     rows={1}
                     disabled={isGenerating}
-                    onKeyDown={(e: any) => {
+                    onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
                         const val = e.currentTarget.value;
@@ -431,8 +431,8 @@ export default function App() {
                   </button>
                   <button 
                     disabled={isGenerating}
-                    onClick={(e: any) => {
-                      const input = (e.currentTarget.parentElement?.parentElement?.querySelector('textarea') as HTMLTextAreaElement);
+                    onClick={(e) => {
+                      const input = (e.currentTarget.parentElement?.parentElement?.querySelector('textarea'));
                       if (!input.value.trim() && !activeFileUrl) return;
                       useChatStore.getState().sendMessage(input.value, activeFileUrl || undefined, extractedText || undefined);
                       input.value = '';
@@ -467,20 +467,11 @@ function ChatSidebarItem({
   pinChat, 
   renameChat,
   setSidebarOpen 
-}: { 
-  chat: any;
-  currentChatId: string | null;
-  loadChat: (id: string) => void;
-  deleteChat: (id: string) => void;
-  pinChat: (id: string) => void;
-  renameChat: (id: string, title: string) => void;
-  setSidebarOpen: (open: boolean) => void;
-  pagination?: any;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [tempTitle, setTempTitle] = useState(chat.title);
   
-  const handleRename = (e: any) => {
+  const handleRename = (e) => {
     e.stopPropagation();
     if (tempTitle.trim() && tempTitle !== chat.title) {
        renameChat(chat._id, tempTitle);
