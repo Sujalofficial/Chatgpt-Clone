@@ -17,10 +17,10 @@ class GeminiService {
 
         this.genAI = new GoogleGenerativeAI(apiKey);
         
-        // Use the requested 2.5 flash as primary
-        this.primaryModel  = 'gemini-2.5-flash';
-        this.fallbackModel = 'gemini-2.0-flash';
-        this.lastResort    = 'gemini-2.0-flash-lite'; // Modern 2026 fallback
+        // Use the requested 1.5 flash as primary
+        this.primaryModel  = 'gemini-1.5-flash';
+        this.fallbackModel = 'gemini-1.5-pro';
+        this.lastResort    = 'gemini-1.5-flash-8b'; 
     }
 
     /**
@@ -62,7 +62,13 @@ class GeminiService {
                 async *[Symbol.asyncIterator]() {
                     for await (const chunk of result.stream) {
                         if (signal?.aborted) break;
-                        yield chunk.text();
+                        try {
+                            const text = chunk.text();
+                            if (text) yield text;
+                        } catch (e) {
+                            // Safety filters or other chunk errors should not crash the stream
+                            console.warn('[GeminiService] Stream chunk error:', e.message);
+                        }
                     }
                 }
             };
