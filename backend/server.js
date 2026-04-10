@@ -84,7 +84,10 @@ const start = async () => {
     } else {
       console.log('⚠️  MONGO_URI not set — running without DB');
     }
-    app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server running on port ${PORT} in ${config.NODE_ENV} mode`));
+    // Don't call app.listen in Vercel serverless environment
+    if (!process.env.VERCEL) {
+      app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server running on port ${PORT} in ${config.NODE_ENV} mode`));
+    }
   } catch (err) {
     console.error('❌ Startup error:', err.message);
     process.exit(1);
