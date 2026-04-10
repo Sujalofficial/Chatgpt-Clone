@@ -41,7 +41,8 @@ class GeminiService {
         try {
             const model = this.genAI.getGenerativeModel({ 
                 model: modelName,
-                systemInstruction: systemPrompt
+                // Passing as parts for maximum compatibility across SDK versions
+                systemInstruction: { parts: [{ text: systemPrompt }] }
             });
 
             const contents = messages.map(msg => ({

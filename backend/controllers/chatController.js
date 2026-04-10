@@ -260,6 +260,9 @@ IMPORTANT:
         }
 
     } catch (routeErr) {
+        if (model === 'gemini') {
+            console.error('[ChatController] Gemini Deep Error:', routeErr);
+        }
         if (routeErr.name === 'AbortError' || abortController.signal.aborted) {
             logger.info({ userId, model }, 'Stream request manually aborted');
             if (!res.writableEnded) res.end();

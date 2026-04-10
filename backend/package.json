@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.58",
-    "@google/generative-ai": "^0.21.0",
+    "@google/generative-ai": "^0.24.1",
     "@sentry/node": "^10.47.0",
     "ai": "^6.0.146",
     "axios": "^1.14.0",
