@@ -37,7 +37,15 @@ app.set('trust proxy', 1);
 
 /* ─── Middleware ──────────────────────────────────────────── */
 app.use(requestLogger);
-app.use(cors({ origin: [config.CLIENT_URL, 'http://127.0.0.1:5173', 'http://localhost:5173'], credentials: true }));
+app.use(cors({ 
+    origin: [
+        config.CLIENT_URL, 
+        'https://synapse-ai-platform-psi-nine.vercel.app',
+        'http://localhost:5173', 
+        'http://127.0.0.1:5173'
+    ], 
+    credentials: true 
+}));
 
 app.use(express.json());
 
