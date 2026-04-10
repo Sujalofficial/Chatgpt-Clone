@@ -254,7 +254,7 @@ export const useChatStore = create()(
         const userMsg = {
           id: `user-${Date.now()}`,
           role: 'user',
-          content: prompt.trim(),
+          content: prompt.trim() || '[Attached File]',
         };
         
         const responseIds = {};

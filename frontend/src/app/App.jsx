@@ -196,7 +196,7 @@ export default function App() {
             <button onClick={() => setShowProfile(true)} className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-slate-200 dark:hover:bg-[#212121] transition-all">
                <div className="w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center text-[10px] font-bold text-white shadow-sm overflow-hidden">
                  {profile?.profilePic ? (
-                    <img src={`${API_BASE}${profile.profilePic}`} alt="" className="w-full h-full object-cover" />
+                    <img src={profile.profilePic.startsWith('http') ? profile.profilePic : `${API_BASE}${profile.profilePic}`} alt="" className="w-full h-full object-cover" />
                  ) : (
                     profile?.name?.charAt(0) || user?.email?.charAt(0).toUpperCase()
                  )}
