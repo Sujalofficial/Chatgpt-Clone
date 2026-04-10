@@ -114,7 +114,7 @@ To support enterprise-level growth (1M+ DAU), the following architectural upgrad
 1. `cd backend && npm install`
 2. Configure `.env` (Use the provided `config.js` for mandatory keys).
 3. `npm run dev` (Starts backend on 5001).
-4. `npm run dev` (Starts frontend from the root directory).
+4. `cd frontend && npm install && npm run dev` (Starts the React frontend).
 
 ---
 
