@@ -17,10 +17,10 @@ class GeminiService {
 
         this.genAI = new GoogleGenerativeAI(apiKey);
         
-        // Use the requested 1.5 flash as primary
-        this.primaryModel  = 'gemini-1.5-flash';
-        this.fallbackModel = 'gemini-1.5-pro';
-        this.lastResort    = 'gemini-1.5-flash-8b'; 
+        // Use the requested 2.5 flash as primary
+        this.primaryModel  = 'gemini-2.5-flash';
+        this.fallbackModel = 'gemini-2.0-flash';
+        this.lastResort    = 'gemini-2.0-flash-lite'; // Modern 2026 fallback
     }
 
     /**
@@ -60,15 +60,24 @@ class GeminiService {
             return {
                 fullStream: result.stream,
                 async *[Symbol.asyncIterator]() {
-                    for await (const chunk of result.stream) {
-                        if (signal?.aborted) break;
-                        try {
-                            const text = chunk.text();
-                            if (text) yield text;
-                        } catch (e) {
-                            // Safety filters or other chunk errors should not crash the stream
-                            console.warn('[GeminiService] Stream chunk error:', e.message);
+                    try {
+                        for await (const chunk of result.stream) {
+                            if (signal?.aborted) break;
+                            
+                            // Check if the chunk has valid text content
+                            if (chunk.candidates?.[0]?.content?.parts?.[0]?.text) {
+                                yield chunk.text();
+                            } else if (chunk.candidates?.[0]?.finishReason === 'SAFETY') {
+                                yield '\n\n⚠️ [Response blocked due to safety filters]';
+                            }
                         }
+                    } catch (genErr) {
+                        console.error('[GeminiService] Stream parsing error:', genErr.message);
+                        // If it's a parsing error from the SDK, we yield a cleaner message
+                        if (genErr.message.includes('parse')) {
+                            throw new Error('Failed to parse model stream - possible API incompatibility');
+                        }
+                        throw genErr;
                     }
                 }
             };
@@ -79,10 +88,11 @@ class GeminiService {
                 throw err;
             }
             const isQuotaError = err.message.includes('429') || err.message.toLowerCase().includes('quota');
+            const isNotFoundError = err.message.toLowerCase().includes('not found') || err.message.toLowerCase().includes('invalid');
             
-            if (isQuotaError && retryCount < 2) {
-                console.warn(`[GeminiService] ⚠️ Quota hit on ${modelName}. Retrying with next model...`);
-                await new Promise(resolve => setTimeout(resolve, 2000));
+            if ((isQuotaError || isNotFoundError) && retryCount < 2) {
+                console.warn(`[GeminiService] ⚠️ ${isNotFoundError ? 'Model not found' : 'Quota hit'} on ${modelName}. Retrying with next model...`);
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 return this.generateStreamWithRetry(messages, systemPrompt, options, retryCount + 1);
             }
 
