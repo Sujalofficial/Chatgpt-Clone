@@ -93,3 +93,5 @@ const start = async () => {
 
 start();
 
+// Export the Express API for Vercel Serverless Functions
+module.exports = app;
