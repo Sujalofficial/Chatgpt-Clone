@@ -17,10 +17,10 @@ class GeminiService {
 
         this.genAI = new GoogleGenerativeAI(apiKey);
         
-        // Utilize universally free-tier supported models to prevent Region/Billing limit: 0 crashes
-        this.primaryModel  = 'gemini-2.0-flash';
-        this.fallbackModel = 'gemini-1.5-flash';
-        this.lastResort    = 'gemini-1.5-flash-8b'; // Bulletproof fallback
+        // Use the requested 2.5 flash as primary
+        this.primaryModel  = 'gemini-2.5-flash';
+        this.fallbackModel = 'gemini-2.0-flash';
+        this.lastResort    = 'gemini-2.0-flash-lite'; // Modern 2026 fallback
     }
 
     /**
@@ -98,8 +98,20 @@ class GeminiService {
                 return this.generateStreamWithRetry(messages, systemPrompt, options, retryCount + 1);
             }
 
-            console.error(`[GeminiService] ERROR on ${modelName}:`, err.message);
-            throw err;
+            console.error(`[GeminiService] FINAL ERROR on ${modelName}:`, err.message);
+            
+            // Clean up Google's massive JSON schema error dumps for the UI
+            if (isQuotaError) {
+                throw new Error("Google Gemini API Quota Exceeded. Please check your Google AI Studio plan or retry later.");
+            } else if (isBusyError) {
+                throw new Error("Google Gemini servers are currently overloaded. Please try again soon.");
+            } else if (isNotFoundError) {
+                throw new Error(`Google Gemini model '${modelName}' is currently unavailable or disabled.`);
+            }
+
+            // Fallback for general unhandled Google API errors preventing raw API leakage
+            const safeErrorMessage = err.message.split('[{')[0].trim();
+            throw new Error(safeErrorMessage || "An unexpected error occurred while communicating with Gemini API.");
         }
     }
 
