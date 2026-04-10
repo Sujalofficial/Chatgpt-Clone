@@ -4,6 +4,18 @@ import { supabase } from './auth-store';
 
 import { API_URL } from '../config';
 
+/* ─── Shared Token Helper ───────────────────────────────────────────────── */
+const getToken = async () => {
+  try {
+    const authState = (await import('./auth-store')).useAuthStore.getState();
+    const { data: { session: supabaseSession } } = await supabase.auth.getSession();
+    return supabaseSession?.access_token || authState.manualSession?.access_token;
+  } catch (err) {
+    console.error('Failed to get token', err);
+    return null;
+  }
+};
+
 /* ─── Build full conversation history for multi-turn context ────────────── */
 const buildHistory = (messages) => {
   return messages
@@ -80,9 +92,7 @@ export const useChatStore = create()(
 
       pinChat: async (chatId) => {
         try {
-          const authState = (await import('./auth-store')).useAuthStore.getState();
-          const { data: { session: supabaseSession } } = await supabase.auth.getSession();
-          const token = supabaseSession?.access_token || authState.manualSession?.access_token;
+          const token = await getToken();
           
           await fetch(`${API_URL}/chat/pin`, {
             method: 'PUT',
@@ -127,9 +137,7 @@ export const useChatStore = create()(
 
       fetchHistory: async () => {
         try {
-          const authState = (await import('./auth-store')).useAuthStore.getState();
-          const { data: { session: supabaseSession } } = await supabase.auth.getSession();
-          const token = supabaseSession?.access_token || authState.manualSession?.access_token;
+          const token = await getToken();
           if (!token) return;
 
           const { searchTerm } = get();
@@ -150,9 +158,7 @@ export const useChatStore = create()(
 
       renameChat: async (chatId, title) => {
         try {
-          const authState = (await import('./auth-store')).useAuthStore.getState();
-          const { data: { session: supabaseSession } } = await supabase.auth.getSession();
-          const token = supabaseSession?.access_token || authState.manualSession?.access_token;
+          const token = await getToken();
 
           await fetch(`${API_URL}/chat/rename`, {
             method: 'PUT',
@@ -168,9 +174,7 @@ export const useChatStore = create()(
 
       deleteChat: async (chatId) => {
         try {
-          const authState = (await import('./auth-store')).useAuthStore.getState();
-          const { data: { session: supabaseSession } } = await supabase.auth.getSession();
-          const token = supabaseSession?.access_token || authState.manualSession?.access_token;
+          const token = await getToken();
 
           await fetch(`${API_URL}/chat/${chatId}`, {
             method: 'DELETE',
@@ -199,9 +203,7 @@ export const useChatStore = create()(
         }
         
         try {
-          const authState = (await import('./auth-store')).useAuthStore.getState();
-          const { data: { session: supabaseSession } } = await supabase.auth.getSession();
-          const token = supabaseSession?.access_token || authState.manualSession?.access_token;
+          const token = await getToken();
           if (!token) return;
 
           const resp = await fetch(`${API_URL}/chat/${chatId}`, {
@@ -273,9 +275,7 @@ export const useChatStore = create()(
         const fullHistory = buildHistory([...messages, userMsg]);
 
         try {
-          const authState = (await import('./auth-store')).useAuthStore.getState();
-          const { data: { session: supabaseSession } } = await supabase.auth.getSession();
-          const token = supabaseSession?.access_token || authState.manualSession?.access_token;
+          const token = await getToken();
 
           await Promise.all(selectedModels.map(async (modelId) => {
             try {

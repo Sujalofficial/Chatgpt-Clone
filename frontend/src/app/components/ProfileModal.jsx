@@ -18,10 +18,14 @@ export default function ProfileModal({ onClose }) {
       const formData = new FormData();
       formData.append('file', file);
 
+      // Attempt to extract session natively first, fallback to manual auth session wrapper
+      const state = useAuthStore.getState();
+      const token = state.session?.access_token || state.manualSession?.access_token;
+
       const resp = await fetch(`${API_BASE}/api/upload`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${manualSession}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: formData,
       });

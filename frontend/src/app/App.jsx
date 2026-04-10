@@ -60,6 +60,22 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   
   const chatContainerRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  const handleSendMessage = () => {
+    const val = textareaRef.current?.value || '';
+    if (!val.trim() && !activeFileUrl) return;
+    
+    useChatStore.getState().sendMessage(val, activeFileUrl || undefined, extractedText || undefined);
+    
+    if (textareaRef.current) {
+      textareaRef.current.value = '';
+      textareaRef.current.style.height = 'auto';
+    }
+    setActiveFileUrl(null);
+    setPreviewUrl(null);
+    setExtractedText(null);
+  };
 
   // Sync theme with HTML class
   useEffect(() => {
@@ -110,8 +126,10 @@ export default function App() {
     recognition.onstart = () => setIsListening(true);
     recognition.onresult = (e) => {
       const transcript = e.results[0][0].transcript;
-      const textarea = document.querySelector('textarea');
-      if (textarea) textarea.value += transcript;
+      if (textareaRef.current) {
+        const currentValue = textareaRef.current.value;
+        textareaRef.current.value += currentValue ? ` ${transcript}` : transcript;
+      }
       setIsListening(false);
     };
     recognition.onerror = () => setIsListening(false);
@@ -406,6 +424,7 @@ export default function App() {
 
                 <div className="flex-1 flex flex-col">
                   <textarea 
+                    ref={textareaRef}
                     placeholder="Ask anything"
                     className="w-full bg-transparent border-none text-[15px] font-medium placeholder-slate-500 dark:placeholder-slate-400 resize-none px-2 pt-2.5 pb-2.5 focus:ring-0 outline-none max-h-52 leading-tight"
                     rows={1}
@@ -413,14 +432,12 @@ export default function App() {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
-                        const val = e.currentTarget.value;
-                        if (!val.trim() && !activeFileUrl) return;
-                        useChatStore.getState().sendMessage(val, activeFileUrl || undefined, extractedText || undefined);
-                        e.currentTarget.value = '';
-                        setActiveFileUrl(null);
-                        setPreviewUrl(null);
-                        setExtractedText(null);
+                        handleSendMessage();
                       }
+                    }}
+                    onChange={(e) => {
+                      e.target.style.height = 'auto';
+                      e.target.style.height = `${e.target.scrollHeight}px`;
                     }}
                   />
                 </div>
@@ -431,15 +448,7 @@ export default function App() {
                   </button>
                   <button 
                     disabled={isGenerating}
-                    onClick={(e) => {
-                      const input = (e.currentTarget.parentElement?.parentElement?.querySelector('textarea'));
-                      if (!input.value.trim() && !activeFileUrl) return;
-                      useChatStore.getState().sendMessage(input.value, activeFileUrl || undefined, extractedText || undefined);
-                      input.value = '';
-                      setActiveFileUrl(null);
-                      setPreviewUrl(null);
-                      setExtractedText(null);
-                    }}
+                    onClick={handleSendMessage}
                     className={`p-1.5 rounded-full transition-all ${isGenerating ? 'opacity-20' : 'bg-black dark:bg-white text-white dark:text-black hover:opacity-80 active:scale-90 shadow-lg'}`}
                   >
                     <ArrowUp className="w-5 h-5" />
