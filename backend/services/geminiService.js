@@ -17,10 +17,10 @@ class GeminiService {
 
         this.genAI = new GoogleGenerativeAI(apiKey);
         
-        // Use the requested 2.5 flash as primary
-        this.primaryModel  = 'gemini-2.5-flash';
-        this.fallbackModel = 'gemini-2.0-flash';
-        this.lastResort    = 'gemini-2.0-flash-lite'; // Modern 2026 fallback
+        // Utilize universally free-tier supported models to prevent Region/Billing limit: 0 crashes
+        this.primaryModel  = 'gemini-2.0-flash';
+        this.fallbackModel = 'gemini-1.5-flash';
+        this.lastResort    = 'gemini-1.5-flash-8b'; // Bulletproof fallback
     }
 
     /**
