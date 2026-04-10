@@ -90,10 +90,11 @@ class GeminiService {
             }
             const isQuotaError = err.message.includes('429') || err.message.toLowerCase().includes('quota');
             const isNotFoundError = err.message.toLowerCase().includes('not found') || err.message.toLowerCase().includes('invalid');
+            const isBusyError = err.message.includes('503') || err.message.toLowerCase().includes('high demand') || err.message.toLowerCase().includes('overloaded');
             
-            if ((isQuotaError || isNotFoundError) && retryCount < 2) {
-                console.warn(`[GeminiService] ⚠️ ${isNotFoundError ? 'Model not found' : 'Quota hit'} on ${modelName}. Retrying with next model...`);
-                await new Promise(resolve => setTimeout(resolve, 1000));
+            if ((isQuotaError || isNotFoundError || isBusyError) && retryCount < 2) {
+                console.warn(`[GeminiService] ⚠️ ${isBusyError ? 'Server busy' : (isNotFoundError ? 'Model not found' : 'Quota hit')} on ${modelName}. Retrying with next model...`);
+                await new Promise(resolve => setTimeout(resolve, 1500));
                 return this.generateStreamWithRetry(messages, systemPrompt, options, retryCount + 1);
             }
 
