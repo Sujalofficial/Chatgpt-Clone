@@ -1,7 +1,15 @@
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 const config = require('../config/config');
 
-const resend = config.RESEND_API_KEY ? new Resend(config.RESEND_API_KEY) : null;
+// Create reusable transporter object using the default SMTP transport
+const transporter = config.SMTP_USER && config.SMTP_PASS ? nodemailer.createTransport({
+  host: config.SMTP_HOST,
+  port: config.SMTP_PORT,
+  auth: {
+    user: config.SMTP_USER,
+    pass: config.SMTP_PASS,
+  },
+}) : null;
 
 /**
  * Send password reset email
@@ -9,18 +17,18 @@ const resend = config.RESEND_API_KEY ? new Resend(config.RESEND_API_KEY) : null;
  * @param {string} resetUrl - The URL with the token
  */
 const sendResetPasswordEmail = async (email, resetUrl) => {
-  console.log(`📨 Attempting to send reset email to: ${email}`);
-  
-  if (!resend) {
-    console.log('❌ RESEND_API_KEY is missing in config. Check your Render environment variables.');
+  console.log(`📨 Attempting to send reset email via SMTP to: ${email}`);
+
+  if (!transporter) {
+    console.log('❌ SMTP Credentials (SMTP_USER/SMTP_PASS) are missing in config.');
     console.log(`🔗 Manual Reset URL for console: ${resetUrl}`);
     return;
   }
 
   try {
-    const data = await resend.emails.send({
-      from: 'Synapse AI <onboarding@resend.dev>', // You can update this once you verify a domain
-      to: [email],
+    const info = await transporter.sendMail({
+      from: '"Synapse AI" <noreply@synapse-ai.com>',
+      to: email,
       subject: 'Reset Your Password - Synapse AI',
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
@@ -37,10 +45,10 @@ const sendResetPasswordEmail = async (email, resetUrl) => {
       `,
     });
 
-    console.log('✅ Reset email sent successfully:', data.id);
-    return data;
+    console.log('✅ Reset email sent successfully:', info.messageId);
+    return info;
   } catch (error) {
-    console.error('❌ Error sending reset email:', error);
+    console.error('❌ Error sending reset email via SMTP:', error);
     throw error;
   }
 };
