@@ -8,6 +8,8 @@ const userSchema = new mongoose.Schema({
   googleId: { type: String, sparse: true, index: true },
   profilePic: { type: String, default: '' },
   plan:     { type: String, enum: ['free', 'plus', 'team'], default: 'free' },
+  resetPasswordToken:  String,
+  resetPasswordExpire: Date,
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {
@@ -18,6 +20,7 @@ userSchema.pre('save', async function (next) {
 });
 
 userSchema.methods.matchPassword = function (plain) {
+  if (!this.password) return false;
   return bcrypt.compare(plain, this.password);
 };
 

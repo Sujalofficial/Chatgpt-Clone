@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
-const { login, signup } = require('../controllers/authController');
+const { login, signup, forgotPassword, resetPassword } = require('../controllers/authController');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
@@ -11,6 +11,8 @@ const { validate, schemas } = require('../middleware/validate');
 
 router.post('/signup', validate(schemas.auth), signup);
 router.post('/login',  validate(schemas.auth), login);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
 
 // GOOGLE AUTH ROUTES
 router.get('/google', passport.authenticate('google', { 

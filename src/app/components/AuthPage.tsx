@@ -2,6 +2,7 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import LoginPage from './Auth/LoginPage';
 import SignupPage from './Auth/SignupPage';
 import AuthCallback from './Auth/AuthCallback';
+import ResetPasswordPage from './Auth/ResetPasswordPage';
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ export default function AuthPage() {
           <Route path="/auth-callback" element={<AuthCallback />} />
           <Route path="/login" element={<LoginPage onToggle={() => navigate('/signup')} />} />
           <Route path="/signup" element={<SignupPage onToggle={() => navigate('/login')} />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </div>

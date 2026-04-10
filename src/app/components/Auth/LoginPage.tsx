@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '../../store/auth-store';
 import { API_URL, AUTH_URL } from '../../config';
 
@@ -21,6 +21,9 @@ export default function LoginPage({ onToggle }: LoginPageProps) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +54,29 @@ export default function LoginPage({ onToggle }: LoginPageProps) {
     window.location.href = `${AUTH_URL}/google`;
   };
 
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const resp = await fetch(`${API_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      if (resp.ok) {
+        setForgotSent(true);
+      } else {
+        const err = await resp.json();
+        setError(err.message || 'Action failed');
+      }
+    } catch (err) {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-6 duration-700 mx-auto py-4">
       <div className="bg-[var(--sidebar)] rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] p-6 sm:p-8 border border-[var(--border)] relative overflow-hidden group">
@@ -79,69 +105,114 @@ export default function LoginPage({ onToggle }: LoginPageProps) {
           <span className="relative px-4 bg-[var(--sidebar)] text-[8px] font-black uppercase tracking-[0.4em] text-slate-400">Secure Protocol</span>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div className="space-y-1.5">
-            <div className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-3 mb-0.5">Email Address</div>
-            <div className="relative group">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-primary transition-colors" />
-              <input 
-                type="email" 
-                placeholder="Email Address" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full pl-11 pr-5 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:ring-4 focus:ring-primary/5 outline-none transition-all dark:text-white font-bold text-xs tracking-tight"
-              />
-            </div>
-          </div>
+        {showForgot ? (
+          <form onSubmit={handleForgot} className="space-y-4">
+             <div className="text-center mb-6">
+               <h2 className="text-xl font-bold">Reset Password</h2>
+               <p className="text-[9px] text-slate-400 mt-1">We'll send you a recovery link</p>
+             </div>
+             <div className="space-y-1.5">
+               <div className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-3 mb-0.5">Email Address</div>
+               <div className="relative group">
+                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300" />
+                 <input 
+                   type="email" 
+                   value={email}
+                   onChange={(e) => setEmail(e.target.value)}
+                   required
+                   className="w-full pl-11 pr-5 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl"
+                   placeholder="Enter your email"
+                 />
+               </div>
+             </div>
+             {forgotSent ? (
+               <div className="p-4 bg-emerald-500/10 text-emerald-500 rounded-xl text-[10px] font-bold text-center">
+                 ✅ Reset link generated! Check server logs in dev.
+                 <button onClick={() => setShowForgot(false)} className="block w-full mt-2 text-primary underline">Back to Login</button>
+               </div>
+             ) : (
+               <div className="flex flex-col gap-3">
+                 <button type="submit" disabled={loading} className="w-full py-3.5 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest">
+                   {loading ? 'Sending...' : 'Send Reset Link'}
+                 </button>
+                 <button type="button" onClick={() => setShowForgot(false)} className="text-[10px] font-bold text-slate-400">Cancel</button>
+               </div>
+             )}
+          </form>
+        ) : (
+          <>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-1.5">
+                <div className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-3 mb-0.5">Email Address</div>
+                <div className="relative group">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-primary transition-colors" />
+                  <input 
+                    type="email" 
+                    placeholder="Email Address" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full pl-11 pr-5 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:ring-4 focus:ring-primary/5 outline-none transition-all dark:text-white font-bold text-xs tracking-tight"
+                  />
+                </div>
+              </div>
 
-          <div className="space-y-1.5">
-            <div className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-3 mb-0.5">Password</div>
-            <div className="relative group">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-primary transition-colors" />
-              <input 
-                type="password" 
-                placeholder="Password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full pl-11 pr-5 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:ring-4 focus:ring-primary/5 outline-none transition-all dark:text-white font-bold text-xs tracking-tight"
-              />
-            </div>
-            <div className="text-right pr-1">
-              <button type="button" className="text-[8px] font-black uppercase tracking-widest text-primary hover:text-primary-hover transition-colors">Forgot Password?</button>
-            </div>
-          </div>
+              <div className="space-y-1.5">
+                <div className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-3 mb-0.5">Password</div>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-primary transition-colors" />
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    placeholder="Password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full pl-11 pr-12 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:ring-4 focus:ring-primary/5 outline-none transition-all dark:text-white font-bold text-xs tracking-tight"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-500/10 rounded-lg text-slate-400 transition-all focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <div className="text-right pr-1">
+                  <button onClick={() => setShowForgot(true)} type="button" className="text-[8px] font-black uppercase tracking-widest text-primary hover:text-primary-hover transition-colors">Forgot Password?</button>
+                </div>
+              </div>
 
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full py-3.5 bg-primary hover:bg-primary-hover text-white rounded-2xl font-black shadow-xl shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2 group/submit uppercase tracking-widest text-[10px]"
-          >
-            {loading ? 'Validating...' : (
-              <>
-                <span>Login</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover/submit:translate-x-1 transition-transform" />
-              </>
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full py-3.5 bg-primary hover:bg-primary-hover text-white rounded-2xl font-black shadow-xl shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2 group/submit uppercase tracking-widest text-[10px]"
+              >
+                {loading ? 'Validating...' : (
+                  <>
+                    <span>Login</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover/submit:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            {error && (
+              <div className="mt-4 p-3 bg-red-500/5 border border-red-500/20 rounded-xl text-red-500 text-[8px] font-black uppercase tracking-widest text-center animate-in fade-in zoom-in duration-300">
+                ⚠️ {error}
+              </div>
             )}
-          </button>
-        </form>
 
-        {error && (
-          <div className="mt-4 p-3 bg-red-500/5 border border-red-500/20 rounded-xl text-red-500 text-[8px] font-black uppercase tracking-widest text-center animate-in fade-in zoom-in duration-300">
-            ⚠️ {error}
-          </div>
+            <div className="mt-6 text-center text-[10px] font-bold text-slate-500">
+              Don't have an account? {' '}
+              <button 
+                onClick={onToggle}
+                className="text-primary font-black hover:underline uppercase tracking-tight ml-1"
+              >
+                Create new account
+              </button>
+            </div>
+          </>
         )}
-
-        <div className="mt-6 text-center text-[10px] font-bold text-slate-500">
-          Don't have an account? {' '}
-          <button 
-            onClick={onToggle}
-            className="text-primary font-black hover:underline uppercase tracking-tight ml-1"
-          >
-            Create new account
-          </button>
-        </div>
       </div>
     </div>
   );
