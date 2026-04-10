@@ -9,9 +9,11 @@ const resend = config.RESEND_API_KEY ? new Resend(config.RESEND_API_KEY) : null;
  * @param {string} resetUrl - The URL with the token
  */
 const sendResetPasswordEmail = async (email, resetUrl) => {
+  console.log(`📨 Attempting to send reset email to: ${email}`);
+  
   if (!resend) {
-    console.log('⚠️ RESEND_API_KEY not found. Logging reset URL to console instead:');
-    console.log(`🔗 RESET URL: ${resetUrl}`);
+    console.log('❌ RESEND_API_KEY is missing in config. Check your Render environment variables.');
+    console.log(`🔗 Manual Reset URL for console: ${resetUrl}`);
     return;
   }
 
