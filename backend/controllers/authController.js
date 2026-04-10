@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
 const config = require('../config/config');
+const mailService = require('../services/mailService');
 
 const signup = async (req, res, next) => {
   try {
@@ -66,14 +67,13 @@ const forgotPassword = async (req, res, next) => {
     await user.save();
 
     // Since we don't have an email service, in dev we return the token
-    // In prod, you'd send an email here.
     const resetUrl = `${config.CLIENT_URL}/reset-password/${resetToken}`;
 
-    console.log(`🔑 RESET URL: ${resetUrl}`);
+    await mailService.sendResetPasswordEmail(user.email, resetUrl);
 
     res.json({ 
       success: true, 
-      message: 'Password reset link generated (see console in dev)',
+      message: 'Password reset link sent to your email (check spam)',
       devToken: process.env.NODE_ENV === 'development' ? resetToken : undefined 
     });
   } catch (err) { next(err); }

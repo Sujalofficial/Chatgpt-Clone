@@ -25,6 +25,7 @@ const envSchema = z.object({
   ENABLE_LOGGING: z.string().default('false').transform(v => v === 'true'),
   ENABLE_REDIS: z.string().default('false').transform(v => v === 'true'),
   DAILY_REQUEST_LIMIT: z.string().default('50').transform(Number),
+  RESEND_API_KEY: z.string().optional(),
 });
 
 
