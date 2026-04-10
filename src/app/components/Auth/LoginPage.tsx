@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 import { useAuthStore } from '../../store/auth-store';
+import { API_URL, AUTH_URL } from '../../config';
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5 transition-transform" xmlns="http://www.w3.org/2000/svg">
@@ -26,7 +27,7 @@ export default function LoginPage({ onToggle }: LoginPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const resp = await fetch('http://127.0.0.1:5001/api/auth/login', {
+      const resp = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -47,8 +48,7 @@ export default function LoginPage({ onToggle }: LoginPageProps) {
   };
 
   const handleGoogleLogin = () => {
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-    window.location.href = `${API_BASE}/auth/google`;
+    window.location.href = `${AUTH_URL}/google`;
   };
 
   return (

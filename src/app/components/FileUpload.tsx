@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Image, FileText, Video, Music, Paperclip, Loader2, X } from 'lucide-react';
 import { useAuthStore } from '../store/auth-store';
+import { API_BASE } from '../config';
 
 interface FileUploadProps {
   onUploadComplete: (url: string, result?: any) => void;
@@ -39,7 +40,6 @@ export default function FileUpload({ onUploadComplete, onPreview }: FileUploadPr
         setUploadProgress(prev => (prev < 90 ? prev + 10 : prev));
       }, 200);
 
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001';
       const token = session?.access_token || manualSession?.access_token;
       const resp = await fetch(`${API_BASE}/api/upload`, {
         method: 'POST',

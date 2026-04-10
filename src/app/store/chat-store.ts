@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from './auth-store';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+import { API_URL } from '../config';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 interface Message {
@@ -131,7 +131,7 @@ export const useChatStore = create<ChatStore>()(
           const { data: { session: supabaseSession } } = await supabase.auth.getSession();
           const token = supabaseSession?.access_token || authState.manualSession?.access_token;
           
-          await fetch(`${API_BASE}/chat/pin`, {
+          await fetch(`${API_URL}/chat/pin`, {
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',
@@ -180,7 +180,7 @@ export const useChatStore = create<ChatStore>()(
           if (!token) return;
 
           const { searchTerm } = get();
-          const url = `${API_BASE}/chat/history${searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : ''}`;
+          const url = `${API_URL}/chat/history${searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : ''}`;
           const resp = await fetch(url, {
             headers: { 'Authorization': `Bearer ${token}` },
           });
@@ -202,7 +202,7 @@ export const useChatStore = create<ChatStore>()(
           const { data: { session: supabaseSession } } = await supabase.auth.getSession();
           const token = supabaseSession?.access_token || authState.manualSession?.access_token;
 
-          await fetch(`${API_BASE}/chat/rename`, {
+          await fetch(`${API_URL}/chat/rename`, {
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',
@@ -220,7 +220,7 @@ export const useChatStore = create<ChatStore>()(
           const { data: { session: supabaseSession } } = await supabase.auth.getSession();
           const token = supabaseSession?.access_token || authState.manualSession?.access_token;
 
-          await fetch(`${API_BASE}/chat/${chatId}`, {
+          await fetch(`${API_URL}/chat/${chatId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` },
           });
@@ -254,7 +254,7 @@ export const useChatStore = create<ChatStore>()(
           const token = supabaseSession?.access_token || authState.manualSession?.access_token;
           if (!token) return;
 
-          const resp = await fetch(`${API_BASE}/chat/${chatId}`, {
+          const resp = await fetch(`${API_URL}/chat/${chatId}`, {
             headers: { 'Authorization': `Bearer ${token}` },
           });
 
@@ -332,7 +332,7 @@ export const useChatStore = create<ChatStore>()(
 
           await Promise.all(selectedModels.map(async (modelId) => {
             try {
-              const resp = await fetch(`${API_BASE}/chat/stream`, {
+              const resp = await fetch(`${API_URL}/chat/stream`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',

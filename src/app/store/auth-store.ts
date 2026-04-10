@@ -8,6 +8,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIU
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 import type { Session, User } from '@supabase/supabase-js';
+import { API_BASE } from '../config';
 
 interface AuthStore {
   session: Session | null;
@@ -63,7 +64,6 @@ export const useAuthStore = create<AuthStore>()(
         const token = state.session?.access_token || state.manualSession?.access_token;
         if (!token) return;
 
-        const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5001';
         try {
           const resp = await fetch(`${API_BASE}/api/user/profile`, {
             headers: { 'Authorization': `Bearer ${token}` },
@@ -79,7 +79,6 @@ export const useAuthStore = create<AuthStore>()(
         const token = state.session?.access_token || state.manualSession?.access_token;
         if (!token) return;
 
-        const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5001';
         try {
           const resp = await fetch(`${API_BASE}/api/user/update`, {
             method: 'PUT',
