@@ -127,7 +127,7 @@ export default function LoginPage({ onToggle }: LoginPageProps) {
              </div>
              {forgotSent ? (
                <div className="p-4 bg-emerald-500/10 text-emerald-500 rounded-xl text-[10px] font-bold text-center">
-                 ✅ Reset link generated! Check server logs in dev.
+                 ✅ Reset link sent! Please check your email inbox (and spam folder).
                  <button onClick={() => setShowForgot(false)} className="block w-full mt-2 text-primary underline">Back to Login</button>
                </div>
              ) : (
