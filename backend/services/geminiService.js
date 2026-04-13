@@ -20,8 +20,7 @@ class GeminiService {
         // Use the requested 2.5 flash as primary
         this.primaryModel  = 'gemini-2.5-flash';
         this.fallbackModel = 'gemini-2.0-flash';
-        this.thirdOption   = 'gemini-2.0-flash-lite';
-        this.stableFallback = 'gemini-1.5-flash'; // High quota (15 RPM)
+        this.lastResort    = 'gemini-2.0-flash-lite'; // Modern 2026 fallback
     }
 
     /**
@@ -34,14 +33,7 @@ class GeminiService {
     }
 
     async generateStreamWithRetry(messages, systemPrompt, options = {}, retryCount = 0) {
-        let modelName;
-        switch(retryCount) {
-            case 0: modelName = this.primaryModel; break;
-            case 1: modelName = this.fallbackModel; break;
-            case 2: modelName = this.thirdOption; break;
-            case 3: modelName = this.stableFallback; break;
-            default: modelName = this.stableFallback;
-        }
+        const modelName = retryCount === 0 ? this.primaryModel : (retryCount === 1 ? this.fallbackModel : this.lastResort);
         const { signal } = options;
         
         console.log(`🚀 [GeminiService] Attempt ${retryCount + 1}: Calling ${modelName}...`);
@@ -100,9 +92,9 @@ class GeminiService {
             const isNotFoundError = err.message.toLowerCase().includes('not found') || err.message.toLowerCase().includes('invalid');
             const isBusyError = err.message.includes('503') || err.message.toLowerCase().includes('high demand') || err.message.toLowerCase().includes('overloaded');
             
-            if ((isQuotaError || isNotFoundError || isBusyError) && retryCount < 3) {
-                console.warn(`[GeminiService] ⚠️ ${isBusyError ? 'Server busy' : (isNotFoundError ? 'Model not found' : 'Quota hit')} on ${modelName}. Retrying with next model (Attempt ${retryCount + 1})...`);
-                await new Promise(resolve => setTimeout(resolve, 2000));
+            if ((isQuotaError || isNotFoundError || isBusyError) && retryCount < 2) {
+                console.warn(`[GeminiService] ⚠️ ${isBusyError ? 'Server busy' : (isNotFoundError ? 'Model not found' : 'Quota hit')} on ${modelName}. Retrying with next model in 2.5s...`);
+                await new Promise(resolve => setTimeout(resolve, 2500));
                 return this.generateStreamWithRetry(messages, systemPrompt, options, retryCount + 1);
             }
 
