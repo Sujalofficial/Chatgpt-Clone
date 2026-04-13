@@ -8,11 +8,11 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
  */
 class GeminiService {
     constructor() {
-        const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
+        const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
         if (!apiKey) {
             console.warn('[GeminiService] ⚠️  No Google API key found in .env!');
         } else {
-            console.log('[GeminiService] ✅ Official SDK Ready.');
+            console.log(`[GeminiService] ✅ Official SDK Ready. (Key starts with: ${apiKey.substring(0, 4)}...)`);
         }
 
         this.genAI = new GoogleGenerativeAI(apiKey);
@@ -102,7 +102,8 @@ class GeminiService {
             
             // Clean up Google's massive JSON schema error dumps for the UI
             if (isQuotaError) {
-                throw new Error("Google Gemini API Quota Exceeded. Please check your Google AI Studio plan or retry later.");
+                const quotaMsg = `Google Gemini API Quota Exceeded for ${modelName}. Please check your Google AI Studio plan (Free tier has low RPM) or retry later. If you just changed your API key, make sure to RESTART the server.`;
+                throw new Error(quotaMsg);
             } else if (isBusyError) {
                 throw new Error("Google Gemini servers are currently overloaded. Please try again soon.");
             } else if (isNotFoundError) {
