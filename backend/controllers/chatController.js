@@ -89,7 +89,10 @@ const sseHeaders = {
     'X-Content-Type-Options': 'nosniff',
 };
 
-const sendToken = (res, text) => res.write(`data: ${JSON.stringify({ text })}\n\n`);
+const sendToken = (res, text) => {
+    res.write(`data: ${JSON.stringify({ text })}\n\n`);
+    if (typeof res.flush === 'function') res.flush();
+};
 const sendDone  = (res)       => { res.write('data: [DONE]\n\n'); res.end(); };
 const sendError = (res, msg)  => { res.write(`data: ${JSON.stringify({ error: msg })}\n\n`); res.end(); };
 
