@@ -21,7 +21,7 @@ class GeminiService {
         // Use the requested 2.5 flash as primary
         this.primaryModel  = 'gemini-2.5-flash';
         this.fallbackModel = 'gemini-2.0-flash';
-        this.lastResort    = 'gemini-2.0-flash-lite'; // Modern 2026 fallback
+        this.lastResort    = 'gemini-1.5-flash'; // Most stable fallback with higher free limits
     }
 
     /**
