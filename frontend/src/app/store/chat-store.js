@@ -84,6 +84,7 @@ export const useChatStore = create()(
       isGenerating: false,
       isLoadingChat: false,
       searchTerm: '',
+      abortController: null,
 
       setSearchTerm: (term) => {
         set({ searchTerm: term });
@@ -131,6 +132,14 @@ export const useChatStore = create()(
 
       copyMessage: (content) => {
         navigator.clipboard.writeText(content);
+      },
+
+      stopGeneration: () => {
+        const { abortController } = get();
+        if (abortController) {
+          abortController.abort();
+          set({ isGenerating: false, abortController: null });
+        }
       },
 
       clearMessages: () => set({ messages: [], currentChatId: null }),
@@ -270,7 +279,9 @@ export const useChatStore = create()(
         }));
         
         const updatedMessages = [...messages, userMsg, ...placeholders];
-        set({ messages: updatedMessages, isGenerating: true });
+        
+        const controller = new AbortController();
+        set({ messages: updatedMessages, isGenerating: true, abortController: controller });
 
         const fullHistory = buildHistory([...messages, userMsg]);
 
@@ -285,6 +296,7 @@ export const useChatStore = create()(
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${token}`,
                 },
+                signal: controller.signal,
                 body: JSON.stringify({ 
                   model: modelId, 
                   messages: fullHistory,
@@ -335,7 +347,11 @@ export const useChatStore = create()(
                 }
               );
             } catch (err) {
-              console.error(`[${modelId}] fetch error:`, err);
+              if (err.name === 'AbortError') {
+                 console.log(`[${modelId}] Generation stopped by user.`);
+              } else {
+                 console.error(`[${modelId}] fetch error:`, err);
+              }
             }
           }));
 
@@ -348,8 +364,15 @@ export const useChatStore = create()(
           }
 
           get().fetchHistory();
+        } catch (err) {
+           console.log('Outer catch block in sendMessage:', err);
         } finally {
-          set({ isGenerating: false });
+          const currentState = get();
+          // We only set isGenerating to false if it's the exact same controller, 
+          // to prevent race conditions from consecutive rapid generations.
+          if (currentState.abortController === controller) {
+             set({ isGenerating: false, abortController: null });
+          }
         }
       },
     }),

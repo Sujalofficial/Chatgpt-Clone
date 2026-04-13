@@ -24,6 +24,7 @@ import {
   Edit2,
   ChevronDown,
   ArrowUp,
+  Square,
   LogOut,
   Pin,
   MoreHorizontal
@@ -45,7 +46,8 @@ export default function App() {
     deleteChat,
     pinChat,
     renameChat,
-    copyMessage
+    copyMessage,
+    stopGeneration
   } = useChatStore((state) => state);
   const { theme, setTheme } = useSettingsStore();
 
@@ -471,13 +473,22 @@ export default function App() {
                   <button onClick={startListening} className={`p-2 rounded-full transition-all ${isListening ? 'bg-red-500 text-white' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10'}`}>
                     <Mic className="w-5 h-5" />
                   </button>
-                  <button 
-                    disabled={isGenerating}
-                    onClick={handleSendMessage}
-                    className={`p-1.5 rounded-full transition-all ${isGenerating ? 'opacity-20' : 'bg-black dark:bg-white text-white dark:text-black hover:opacity-80 active:scale-90 shadow-lg'}`}
-                  >
-                    <ArrowUp className="w-5 h-5" />
-                  </button>
+                  {isGenerating ? (
+                    <button 
+                      onClick={() => stopGeneration()}
+                      className="p-1.5 rounded-full transition-all bg-black dark:bg-white text-white dark:text-black hover:opacity-80 active:scale-90 shadow-lg flex items-center justify-center"
+                    >
+                      <Square className="w-5 h-5 fill-current" />
+                    </button>
+                  ) : (
+                    <button 
+                      disabled={isGenerating}
+                      onClick={handleSendMessage}
+                      className="p-1.5 rounded-full transition-all bg-black dark:bg-white text-white dark:text-black hover:opacity-80 active:scale-90 shadow-lg"
+                    >
+                      <ArrowUp className="w-5 h-5" />
+                    </button>
+                  )}
                 </div>
               </div>
               
