@@ -58,6 +58,7 @@ export default function App() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   
   const chatContainerRef = useRef(null);
   const textareaRef = useRef(null);
@@ -234,12 +235,19 @@ export default function App() {
               </button>
               
               {/* Contextual Model Selector */}
-              <div className="relative group">
-                <button className="flex items-center gap-1 px-2 py-1.5 hover:bg-slate-500/5 rounded-lg transition-all text-slate-700 dark:text-slate-300">
+              <div className="relative">
+                <button 
+                  onClick={() => setModelDropdownOpen(!modelDropdownOpen)}
+                  className="flex items-center gap-1 px-2 py-1.5 hover:bg-slate-500/5 rounded-lg transition-all text-slate-700 dark:text-slate-300"
+                >
                   <span className="text-[16px] font-semibold">Synapse AI</span>
                   <ChevronDown className="w-4 h-4 opacity-40 ml-0.5" />
                 </button>
-                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-[#2f2f2f] border border-slate-200 dark:border-white/5 rounded-xl shadow-2xl p-2 hidden group-hover:block transition-all animate-in fade-in zoom-in-95 duration-200 z-50">
+                
+                {modelDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setModelDropdownOpen(false)}></div>
+                    <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-[#2f2f2f] border border-slate-200 dark:border-white/5 rounded-xl shadow-2xl p-2 transition-all animate-in fade-in zoom-in-95 duration-200 z-50">
                    {models.map((m) => (
                       <div key={m.id} onClick={() => useChatStore.getState().toggleModel(m.id)} className={`flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 ${selectedModels.includes(m.id) ? 'text-emerald-500' : 'text-slate-400'}`}>
                         <div className="flex items-center gap-3">
@@ -249,6 +257,8 @@ export default function App() {
                       </div>
                    ))}
                 </div>
+                </>
+                )}
               </div>
             </div>
             
