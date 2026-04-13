@@ -234,6 +234,11 @@ IMPORTANT:
 
 
     res.writeHead(200, sseHeaders);
+    if (typeof res.flushHeaders === 'function') res.flushHeaders();
+    
+    // Send an initial empty token to "prime" the stream and bypass some proxy buffers
+    res.write(':\n\n'); 
+
     if (chat) res.write(`data: ${JSON.stringify({ chatId: chat._id })}\n\n`);
 
     let generatedContent = '';
