@@ -15,6 +15,7 @@ class GeminiService {
             console.log(`[GeminiService] ✅ Official SDK Ready. (Key starts with: ${apiKey.substring(0, 4)}...)`);
         }
 
+        this.apiKeyPrefix = apiKey ? `${apiKey.substring(0, 4)}...` : 'MISSING';
         this.genAI = new GoogleGenerativeAI(apiKey);
         
         // Use the requested 2.5 flash as primary
@@ -102,7 +103,7 @@ class GeminiService {
             
             // Clean up Google's massive JSON schema error dumps for the UI
             if (isQuotaError) {
-                const quotaMsg = `Google Gemini API Quota Exceeded for ${modelName}. Please check your Google AI Studio plan (Free tier has low RPM) or retry later. If you just changed your API key, make sure to RESTART the server.`;
+                const quotaMsg = `Google Gemini API Quota Exceeded for ${modelName} (API Key: ${this.apiKeyPrefix}). Please check your Google AI Studio plan (Free tier has low RPM) or retry later. If you just changed your API key, make sure to RESTART the server.`;
                 throw new Error(quotaMsg);
             } else if (isBusyError) {
                 throw new Error("Google Gemini servers are currently overloaded. Please try again soon.");
