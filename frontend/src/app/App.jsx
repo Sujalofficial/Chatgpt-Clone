@@ -198,11 +198,13 @@ export default function App() {
                  {profile?.profilePic ? (
                     <img src={profile.profilePic.startsWith('http') ? profile.profilePic : `${API_BASE}${profile.profilePic}`} alt="" className="w-full h-full object-cover" />
                  ) : (
-                    profile?.name?.charAt(0) || user?.email?.charAt(0).toUpperCase()
+                    user?.sandbox ? 'G' : (profile?.name?.charAt(0) || user?.email?.charAt(0).toUpperCase())
                  )}
                </div>
-               <div className="flex-1 text-left">
-                  <div className="text-[14px] font-medium leading-none text-slate-700 dark:text-white">{profile?.name || user?.email?.split('@')[0]}</div>
+               <div className="flex-1 text-left overflow-hidden">
+                  <div className="text-[14px] font-medium leading-none text-slate-700 dark:text-white truncate">
+                    {user?.sandbox ? 'Guest User' : (profile?.name || user?.email?.split('@')[0])}
+                  </div>
                </div>
             </button>
             <button onClick={signOut} className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-slate-200 dark:hover:bg-[#212121] transition-all text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white">
