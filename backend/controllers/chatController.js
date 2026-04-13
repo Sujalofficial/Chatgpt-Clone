@@ -83,9 +83,10 @@ Make the answer strong enough that the user can confidently explain it in a real
 /* SSE Helpers */
 const sseHeaders = {
     'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
+    'Cache-Control': 'no-cache, no-transform',
     'Connection': 'keep-alive',
     'X-Accel-Buffering': 'no',
+    'X-Content-Type-Options': 'nosniff',
 };
 
 const sendToken = (res, text) => res.write(`data: ${JSON.stringify({ text })}\n\n`);

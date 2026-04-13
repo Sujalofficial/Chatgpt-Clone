@@ -65,19 +65,17 @@ class GeminiService {
                         for await (const chunk of result.stream) {
                             if (signal?.aborted) break;
                             
-                            // Check if the chunk has valid text content
-                            if (chunk.candidates?.[0]?.content?.parts?.[0]?.text) {
-                                yield chunk.text();
+                            // Manually extract text to avoid SDK's internal .text() parsing errors
+                            const part = chunk.candidates?.[0]?.content?.parts?.[0]?.text;
+                            if (part) {
+                                yield part;
                             } else if (chunk.candidates?.[0]?.finishReason === 'SAFETY') {
-                                yield '\n\n⚠️ [Response blocked due to safety filters]';
+                                yield '\n\n⚠️ [Response blocked by Google Safety Filters]';
                             }
                         }
                     } catch (genErr) {
                         console.error('[GeminiService] Stream parsing error:', genErr.message);
-                        // If it's a parsing error from the SDK, we yield a cleaner message
-                        if (genErr.message.includes('parse')) {
-                            throw new Error('Failed to parse model stream - possible API incompatibility');
-                        }
+                        // If it fails mid-stream, try to provide whatever we can
                         throw genErr;
                     }
                 }
