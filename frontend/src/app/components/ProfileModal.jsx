@@ -64,7 +64,7 @@ export default function ProfileModal({ onClose }) {
         className="relative bg-white dark:bg-[#1e293b] w-full max-w-lg rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] overflow-hidden animate-in fade-in zoom-in slide-in-from-bottom-8 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-8 border-b border-slate-100 dark:border-slate-800/50 flex justify-between items-center bg-slate-50/50 dark:bg-[#0f172a]/50">
+        <div className="p-6 sm:p-8 border-b border-slate-100 dark:border-slate-800/50 flex justify-between items-center bg-slate-50/50 dark:bg-[#0f172a]/50">
           <div>
             <h2 className="text-2xl font-black tracking-tight text-slate-800 dark:text-white">Profile Identity</h2>
             <p className="text-[10px] uppercase tracking-[0.3em] font-black text-primary mt-1">Personal Settings</p>
@@ -74,7 +74,7 @@ export default function ProfileModal({ onClose }) {
           </button>
         </div>
 
-        <div className="p-8 space-y-10">
+        <div className="p-6 sm:p-8 space-y-10 max-h-[70vh] overflow-y-auto">
           {/* Avatar Section */}
           <div className="flex flex-col items-center">
             <div className="relative group">
@@ -133,17 +133,17 @@ export default function ProfileModal({ onClose }) {
           </div>
         </div>
 
-        <div className="p-8 bg-slate-50/80 dark:bg-[#0f172a]/80 flex gap-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="p-6 sm:p-8 bg-slate-50/80 dark:bg-[#0f172a]/80 flex gap-4 border-t border-slate-100 dark:border-slate-800">
             <button 
               onClick={onClose}
-              className="flex-1 py-4 px-6 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-black rounded-2xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition-all text-xs uppercase tracking-widest"
+              className="flex-1 py-3.5 sm:py-4 px-4 sm:px-6 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-black rounded-2xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition-all text-xs uppercase tracking-widest"
             >
               Cancel
             </button>
             <button 
               onClick={handleSave}
               disabled={isUpdating}
-              className="flex-2 py-4 px-10 bg-primary text-white font-black rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2 text-xs uppercase tracking-widest"
+              className="flex-[2] py-3.5 sm:py-4 px-6 sm:px-10 bg-primary text-white font-black rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2 text-xs uppercase tracking-widest"
             >
               {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Identity'}
             </button>

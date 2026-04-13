@@ -240,41 +240,9 @@ IMPORTANT:
 
     // 4. STRICT ISOLATION ROUTING
     try {
-        let stream;
-        let actualModelUsed = model;
-
-        try {
-            if (model === 'gemini') {
-                stream = await geminiService.generateStream(activeConversation, SYSTEM_PROMPT, { signal: abortController.signal });
-            } else if (model === 'groq') {
-                stream = await groqService.generateStream(activeConversation, SYSTEM_PROMPT, { signal: abortController.signal });
-            } else if (model === 'openai') {
-                stream = await openaiService.generateStream(activeConversation, SYSTEM_PROMPT, { signal: abortController.signal });
-            } else if (model === 'deepseek') {
-                stream = await deepseekService.generateStream(activeConversation, SYSTEM_PROMPT, { signal: abortController.signal });
-            } else {
-                throw new Error(`Unsupported model identifier: ${model}`);
-            }
-        } catch (initialErr) {
-            // Apply SMART FALLBACK
-            const isQuotaOrBusy = initialErr.message.toLowerCase().includes('quota') || initialErr.message.toLowerCase().includes('overloaded') || initialErr.message.includes('429');
-            if (model === 'gemini' && isQuotaOrBusy) {
-                logger.warn({ err: initialErr.message, userId }, `Gemini API fail, falling back to Groq`);
-                sendToken(res, `*(System: Gemini API Overloaded. Silently falling back to Groq Llama 3)*\n\n`);
-                stream = await groqService.generateStream(activeConversation, SYSTEM_PROMPT, { signal: abortController.signal });
-                actualModelUsed = 'groq';
-            } else if (model === 'groq' && isQuotaOrBusy) {
-                logger.warn({ err: initialErr.message, userId }, `Groq API fail, falling back to Deepseek`);
-                sendToken(res, `*(System: Groq API Overloaded. Silently falling back to Deepseek)*\n\n`);
-                stream = await deepseekService.generateStream(activeConversation, SYSTEM_PROMPT, { signal: abortController.signal });
-                actualModelUsed = 'deepseek';
-            } else {
-                throw initialErr;
-            }
-        }
-
-        // Output parsing logic depending on final model used
-        if (actualModelUsed === 'gemini' || actualModelUsed === 'deepseek') {
+        if (model === 'gemini') {
+            const stream = await geminiService.generateStream(activeConversation, SYSTEM_PROMPT, { signal: abortController.signal });
+            
             for await (const part of stream) {
                 if (abortController.signal.aborted) break;
                 if (part) {
@@ -282,7 +250,8 @@ IMPORTANT:
                     sendToken(res, part);
                 }
             }
-        } else if (actualModelUsed === 'groq' || actualModelUsed === 'openai') {
+        } else if (model === 'groq') {
+            const stream = await groqService.generateStream(activeConversation, SYSTEM_PROMPT, { signal: abortController.signal });
             for await (const chunk of stream) {
                 if (abortController.signal.aborted) break;
                 const delta = chunk.choices?.[0]?.delta?.content;
@@ -291,6 +260,27 @@ IMPORTANT:
                     sendToken(res, delta);
                 }
             }
+        } else if (model === 'openai') {
+            const stream = await openaiService.generateStream(activeConversation, SYSTEM_PROMPT, { signal: abortController.signal });
+            for await (const chunk of stream) {
+                if (abortController.signal.aborted) break;
+                const delta = chunk.choices?.[0]?.delta?.content;
+                if (delta) {
+                    generatedContent += delta;
+                    sendToken(res, delta);
+                }
+            }
+        } else if (model === 'deepseek') {
+            const stream = await deepseekService.generateStream(activeConversation, SYSTEM_PROMPT, { signal: abortController.signal });
+            for await (const part of stream) {
+                if (abortController.signal.aborted) break;
+                if (part) {
+                    generatedContent += part;
+                    sendToken(res, part);
+                }
+            }
+        } else {
+            throw new Error(`Unsupported model identifier: ${model}`);
         }
 
         // Save to DB using original un-mutated history (parallel-safe)

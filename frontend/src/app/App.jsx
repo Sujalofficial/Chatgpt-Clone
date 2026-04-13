@@ -156,6 +156,13 @@ export default function App() {
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
 
+      {sidebarOpen && (
+        <div 
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-black/40 z-40 md:hidden animate-in fade-in transition-all"
+        />
+      )}
+
       {/* Sidebar - ChatGPT Style */}
       <div 
         className={`fixed md:relative z-50 h-full bg-[#f9f9f9] dark:bg-[#171717] border-r border-slate-200 dark:border-white/5 text-slate-900 dark:text-white transition-all duration-300 ease-in-out flex flex-col ${
@@ -285,10 +292,10 @@ export default function App() {
                     <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-white/20 rounded-full blur-[1px]"></div>
                   </div>
                 </div>
-                <h1 className="text-[32px] font-bold mb-10 text-slate-800 dark:text-slate-100 tracking-[-0.02em]">
+                <h1 className="text-[28px] sm:text-[32px] font-bold mb-10 text-slate-800 dark:text-slate-100 tracking-[-0.02em] px-4">
                   How can I help you today?
                 </h1>
-                   <div className="flex flex-wrap justify-center gap-2.5 w-full max-w-xl">
+                   <div className="flex flex-wrap justify-center gap-2.5 w-full max-w-xl px-4">
                        {[
                          { t: 'Draft a contract', i: '⚖️' },
                          { t: 'Explain React', i: '⚛️' },
