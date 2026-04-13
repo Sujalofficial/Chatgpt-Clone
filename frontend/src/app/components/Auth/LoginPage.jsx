@@ -49,6 +49,26 @@ export default function LoginPage({ onToggle }) {
     window.location.href = `${AUTH_URL}/google`;
   };
 
+  const handleGuestLogin = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const resp = await fetch(`${API_URL}/auth/guest-login`, {
+        method: 'POST',
+      });
+      if (resp.ok) {
+        const { token, user } = await resp.json();
+        useAuthStore.getState().setSessionFromPassport(token, user);
+      } else {
+        setError('Guest login failed');
+      }
+    } catch (err) {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleForgot = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -87,10 +107,17 @@ export default function LoginPage({ onToggle }) {
 
         <button 
           onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[var(--background)] border border-[var(--border)] rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-sm hover:shadow-lg hover:translate-y-[-1px] transition-all mb-6 group/btn active:scale-95"
+          className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[var(--background)] border border-[var(--border)] rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-sm hover:shadow-lg hover:translate-y-[-1px] transition-all mb-4 group/btn active:scale-95"
         >
           <GoogleIcon />
           <span className="text-slate-600 dark:text-slate-300">Sign In with Google</span>
+        </button>
+
+        <button 
+          onClick={handleGuestLogin}
+          className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-slate-100 dark:bg-slate-800 border border-[var(--border)] rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-sm hover:shadow-lg hover:translate-y-[-1px] transition-all mb-6 group/btn active:scale-95"
+        >
+          <span className="text-slate-600 dark:text-slate-300">Continue as Guest</span>
         </button>
 
         <div className="relative mb-6 text-center">

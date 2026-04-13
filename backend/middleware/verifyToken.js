@@ -25,7 +25,9 @@ const verifyToken = (req, res, next) => {
     // Set req.user handling both standard 'id' and potential legacy fields
     req.user = { 
       id: decoded.id || decoded.sub, 
-      email: decoded.email 
+      email: decoded.email,
+      role: decoded.role || 'user',
+      sandbox: decoded.sandbox || false
     };
     
     next();

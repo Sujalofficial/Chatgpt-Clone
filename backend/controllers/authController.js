@@ -102,4 +102,35 @@ const resetPassword = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { signup, login, forgotPassword, resetPassword };
+const guestLogin = async (req, res, next) => {
+  try {
+    const sessionId = crypto.randomUUID();
+    const JWT_SECRET = config.JWT_SECRET || 'dev-secret-change-in-production';
+    
+    // Generate a temporary JWT token for the guest
+    const token = jwt.sign(
+      { 
+        id: `guest-${sessionId}`, 
+        email: `guest-${sessionId}@sandbox.local`,
+        role: 'guest',
+        sandbox: true 
+      }, 
+      JWT_SECRET, 
+      { expiresIn: '6h' } // 6 hours short-lived token
+    );
+    
+    res.json({ 
+      success: true,
+      token, 
+      user: { 
+        id: `guest-${sessionId}`, 
+        email: `guest-${sessionId}@sandbox.local`, 
+        name: 'Guest User',
+        role: 'guest',
+        sandbox: true
+      } 
+    });
+  } catch (err) { next(err); }
+};
+
+module.exports = { signup, login, forgotPassword, resetPassword, guestLogin };

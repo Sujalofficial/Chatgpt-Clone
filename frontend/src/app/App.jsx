@@ -244,6 +244,12 @@ export default function App() {
             </div>
             
             <div className="flex items-center gap-1.5">
+               {user?.sandbox && (
+                 <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-full text-[10px] font-black uppercase tracking-widest mr-2 shadow-sm">
+                   <span>Sandbox Mode</span>
+                   <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                 </div>
+               )}
                <button className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-600/10 text-emerald-600 rounded-full text-[11px] font-bold hover:bg-emerald-600/20 transition-all mr-1">
                   ✨ Get Plus
                </button>

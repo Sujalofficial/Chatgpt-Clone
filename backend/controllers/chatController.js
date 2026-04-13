@@ -6,6 +6,12 @@ const pdfService = require('../services/pdfService');
 const fileService = require('../services/fileService');
 const storageService = require('../services/storageService');
 const Chat = require('../models/Chat');
+const SandboxChat = require('../services/sandboxService');
+
+// Helper to determine which DB model to use
+const getChatModel = (req) => {
+    return req.user?.sandbox ? SandboxChat : Chat;
+};
 const Usage = require('../models/Usage');
 const { logger, Sentry } = require('../utils/logger');
 const { getCache, setCache } = require('../utils/redisClient');
@@ -208,11 +214,12 @@ IMPORTANT:
     let chat;
     if (userId) {
         try {
+            const ActiveChat = getChatModel(req);
             if (chatId) {
-                chat = await Chat.findOne({ _id: chatId, user: userId });
+                chat = await ActiveChat.findOne({ _id: chatId, user: userId });
             }
             if (!chat && lastMsg) {
-                chat = new Chat({ 
+                chat = new ActiveChat({ 
                     user: userId, 
                     title: lastMsg.content.substring(0, 40) || 'New Chat' 
                 });
@@ -279,7 +286,8 @@ IMPORTANT:
         // Save to DB using original un-mutated history (parallel-safe)
         if (chat && generatedContent && !abortController.signal.aborted) {
            const history = [...originalConversation, { role: 'assistant', content: generatedContent }];
-           await Chat.findOneAndUpdate(
+           const ActiveChat = getChatModel(req);
+           await ActiveChat.findOneAndUpdate(
              { _id: chat._id },
              { $set: { [`columns.${model}`]: history } }
            );
@@ -290,7 +298,7 @@ IMPORTANT:
             logger.info({ userId, model, chatId, genChars: generatedContent.length }, 'Stream completed successfully');
             
             // ─── INCREMENT USAGE (PROD QUOTA) ───
-            if (config.ENABLE_QUOTA && userId) {
+            if (config.ENABLE_QUOTA && userId && !req.user?.sandbox) {
                 const today = new Date().toISOString().split('T')[0];
                 const tokenEstimate = Math.ceil(generatedContent.length / 4); // Simple heuristic
                 
@@ -337,13 +345,15 @@ const getChats = async (req, res) => {
       const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 20));
       const skip = (page - 1) * limit;
 
+      const ActiveChat = getChatModel(req);
+
       const [chats, total] = await Promise.all([
-        Chat.find({ user: req.user.id })
+        ActiveChat.find({ user: req.user.id })
             .sort({ updatedAt: -1 })
             .skip(skip)
             .limit(limit)
             .lean(),
-        Chat.countDocuments({ user: req.user.id })
+        ActiveChat.countDocuments({ user: req.user.id })
       ]);
 
       res.json({
@@ -364,14 +374,16 @@ const getChats = async (req, res) => {
 
 const deleteChat = async (req, res) => {
     try {
-        await Chat.findOneAndDelete({ _id: req.params.chatId, user: req.user.id });
+        const ActiveChat = getChatModel(req);
+        await ActiveChat.findOneAndDelete({ _id: req.params.chatId, user: req.user.id });
         res.json({ message: 'Deleted' });
     } catch (e) { res.status(500).json({ error: 'Failed' }); }
 };
 
 const renameChat = async (req, res) => {
     try {
-        const chat = await Chat.findOneAndUpdate(
+        const ActiveChat = getChatModel(req);
+        const chat = await ActiveChat.findOneAndUpdate(
             { _id: req.body.chatId, user: req.user.id },
             { title: req.body.title },
             { new: true }
@@ -382,7 +394,8 @@ const renameChat = async (req, res) => {
 
 const togglePinChat = async (req, res) => {
     try {
-      const chat = await Chat.findOne({ _id: req.body.chatId, user: req.user.id });
+      const ActiveChat = getChatModel(req);
+      const chat = await ActiveChat.findOne({ _id: req.body.chatId, user: req.user.id });
       if (!chat) return res.status(404).json({ error: 'Not found' });
       chat.isPinned = !chat.isPinned;
       await chat.save();
@@ -404,7 +417,8 @@ const getChat = async (req, res) => {
             }
         }
 
-        const chat = await Chat.findOne({ _id: chatId, user: req.user.id });
+        const ActiveChat = getChatModel(req);
+        const chat = await ActiveChat.findOne({ _id: chatId, user: req.user.id });
         if (!chat) return res.status(404).json({ error: 'Chat not found' });
 
         // Set Cache for 5 mins (Fail open)
