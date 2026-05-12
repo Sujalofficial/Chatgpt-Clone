@@ -16,8 +16,15 @@ import MessageList from './components/MessageList';
 import ChatInput from './components/ChatInput';
 
 function App() {
-  const auth = useAuthStore();
-  const chat = useChatStore();
+  // ✅ Use stable selectors — avoids infinite re-render loops
+  const authLoading  = useAuthStore(state => state.loading);
+  const user         = useAuthStore(state => state.user);
+  const initialize   = useAuthStore(state => state.initialize);
+
+  const fetchHistory   = useChatStore(state => state.fetchHistory);
+  const loadChat       = useChatStore(state => state.loadChat);
+  const currentChatId  = useChatStore(state => state.currentChatId);
+  const messagesLength = useChatStore(state => state.messages.length);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -31,27 +38,27 @@ function App() {
    */
 
   useEffect(() => {
-    auth.initialize();
-  }, [auth]);
+    initialize();
+  }, []); // ✅ Run once on mount
 
   useEffect(() => {
-    if (auth.user) {
-      chat.fetchHistory();
+    if (user) {
+      fetchHistory();
     }
-  }, [auth.user, chat]);
+  }, [user]); // ✅ Only re-runs when user actually changes
 
   useEffect(() => {
     // Restore last chat on refresh
-    if (auth.user && chat.currentChatId && chat.messages.length === 0) {
-      chat.loadChat(chat.currentChatId);
+    if (user && currentChatId && messagesLength === 0) {
+      loadChat(currentChatId);
     }
-  }, [auth.user, chat.currentChatId, chat.messages.length, chat]);
+  }, [user, currentChatId, messagesLength]); // ✅ All stable primitives
 
   /**
    * SECTION: RENDER
    */
 
-  if (auth.loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <p className="animate-pulse font-bold">Waking up Synapse...</p>
@@ -59,7 +66,7 @@ function App() {
     );
   }
 
-  if (!auth.user) {
+  if (!user) {
     return <AuthPage />;
   }
 

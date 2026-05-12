@@ -26,24 +26,7 @@ const buildHistory = (messages) => {
     }));
 };
 
-const useChatstore = create(
-  persist(
-    (set,get)=>({
-      chats: [],
-      currentChaId : null,
-      setCurrentChat:(id)=>
-        set({currentChatid : id}),
-
-      addChat : (chat)=>
-        set((state)=>({
-          chats:[...state.chats, chat],
-        }))
-    }),
-    {
-      name :"chat-storage",
-    }
-  )
-)
+/* ─── Dead useChatstore removed — use useChatStore (exported below) ─────── */
 
 /* ─── Parse SSE stream robustly ─────────────────────────────────────────── */
 const parseSSE = async (

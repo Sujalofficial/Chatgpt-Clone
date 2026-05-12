@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Image, FileText, Video, Music, Paperclip, Loader2, X } from 'lucide-react';
 import { useAuthStore } from '../store/auth-store';
-import { API_BASE } from '../config';
+import { API_URL } from '../config';
 
 export default function FileUpload({ onUploadComplete, onPreview }) {
   const fileInputRef = useRef(null);
@@ -36,7 +36,7 @@ export default function FileUpload({ onUploadComplete, onPreview }) {
       }, 200);
 
       const token = session?.access_token || manualSession?.access_token;
-      const resp = await fetch(`${API_BASE}/api/upload`, {
+      const resp = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

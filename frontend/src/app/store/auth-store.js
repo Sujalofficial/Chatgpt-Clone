@@ -9,6 +9,18 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 import { API_BASE } from '../config';
 
+// ─── Module-level guard: ensures the Supabase listener is NEVER registered more
+// than once, no matter how many times initialize() is accidentally called.
+let _authSubscription = null;
+let _initialized = false;
+
+// ─── Debounce helper: prevents syncProfile from firing in a burst
+let _syncProfileTimer = null;
+const debouncedSyncProfile = (fn) => {
+  clearTimeout(_syncProfileTimer);
+  _syncProfileTimer = setTimeout(fn, 300);
+};
+
 export const useAuthStore = create()(
   persist(
     (set, get) => ({
@@ -19,6 +31,13 @@ export const useAuthStore = create()(
       loading: true,
 
       initialize: async () => {
+        // ✅ IDEMPOTENCY GUARD — prevents stacked listeners from multiple calls
+        if (_initialized) {
+          console.log('[Auth] initialize() already called — skipping duplicate.');
+          return;
+        }
+        _initialized = true;
+
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           set({ session, user: session.user, loading: false });
@@ -30,12 +49,21 @@ export const useAuthStore = create()(
           set({ loading: false });
         }
 
-        supabase.auth.onAuthStateChange((_event, session) => {
-          if (session) {
-            set({ session, user: session.user });
-            get().syncProfile();
+        // ✅ SINGLE SUBSCRIPTION — store it so we can clean up if needed
+        const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+          // Only act on meaningful events, not background token refreshes that fire repeatedly
+          if (_event === 'SIGNED_IN' || _event === 'TOKEN_REFRESHED') {
+            if (session) {
+              set({ session, user: session.user });
+              // ✅ DEBOUNCED — prevents burst of syncProfile calls on rapid auth events
+              debouncedSyncProfile(() => get().syncProfile());
+            }
+          }
+          if (_event === 'SIGNED_OUT') {
+            set({ session: null, user: null, profile: null });
           }
         });
+        _authSubscription = subscription;
       },
 
       setSessionFromPassport: (token, user) => {
@@ -80,6 +108,12 @@ export const useAuthStore = create()(
       },
 
       signOut: async () => {
+        // ✅ Clean up the Supabase subscription on sign out
+        if (_authSubscription) {
+          _authSubscription.unsubscribe();
+          _authSubscription = null;
+          _initialized = false; // Allow re-initialization after sign out
+        }
         await supabase.auth.signOut();
         set({ session: null, user: null, profile: null, manualSession: null });
       }
