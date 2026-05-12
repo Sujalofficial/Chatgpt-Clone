@@ -26,6 +26,25 @@ const buildHistory = (messages) => {
     }));
 };
 
+const useChatstore = create(
+  persist(
+    (set,get)=>({
+      chats: [],
+      currentChaId : null,
+      setCurrentChat:(id)=>
+        set({currentChatid : id}),
+
+      addChat : (chat)=>
+        set((state)=>({
+          chats:[...state.chats, chat],
+        }))
+    }),
+    {
+      name :"chat-storage",
+    }
+  )
+)
+
 /* ─── Parse SSE stream robustly ─────────────────────────────────────────── */
 const parseSSE = async (
   resp,
@@ -381,6 +400,7 @@ export const useChatStore = create()(
       partialize: (state) => ({
         selectedModels: state.selectedModels,
         cachedChats: state.cachedChats,
+        currentChatId: state.currentChatId,
       }),
     }
   )
