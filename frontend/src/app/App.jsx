@@ -88,7 +88,9 @@ function App() {
         {/* Header */}
         <ChatHeader 
           sidebarOpen={isSidebarOpen} 
-          setSidebarOpen={setIsSidebarOpen} 
+          setSidebarOpen={setIsSidebarOpen}
+          onSettingsOpen={() => setIsSettingsOpen(true)}
+          onProfileOpen={() => setIsProfileOpen(true)}
         />
 
         {/* Message View Area */}
