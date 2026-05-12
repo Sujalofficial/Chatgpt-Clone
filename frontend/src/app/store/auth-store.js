@@ -50,7 +50,8 @@ export const useAuthStore = create()(
         }
 
         // ✅ SINGLE SUBSCRIPTION — store it so we can clean up if needed
-        const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+        // onAuthStateChange returns { data: { subscription } } — must destructure the inner object
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
           // Only act on meaningful events, not background token refreshes that fire repeatedly
           if (_event === 'SIGNED_IN' || _event === 'TOKEN_REFRESHED') {
             if (session) {
@@ -63,7 +64,7 @@ export const useAuthStore = create()(
             set({ session: null, user: null, profile: null });
           }
         });
-        _authSubscription = subscription;
+        _authSubscription = subscription; // subscription.unsubscribe() is now valid
       },
 
       setSessionFromPassport: (token, user) => {
