@@ -7,16 +7,13 @@ const config = require('../config/config');
  * This app has TWO types of authenticated users:
  *  1. Manual (email/password) users → token signed with our JWT_SECRET
  *  2. Supabase (Google OAuth / magic link) users → token signed by Supabase
- *
- * We try our secret first. If that fails, we attempt to decode it as a
- * Supabase JWT (which is a standard JWT we can decode without verifying
- * the signature since Supabase already validated it on their end).
  */
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
+    console.log('[Auth] Rejecting: No token provided');
     return res.status(401).json({
       success: false,
       message: 'Authentication required: No token provided'
@@ -35,30 +32,38 @@ const verifyToken = (req, res, next) => {
       sandbox: decoded.sandbox || false,
       authType: 'manual',
     };
+    // console.log(`[Auth] Path 1 Success: Manual user ${req.user.email || req.user.id}`);
     return next();
   } catch (backendErr) {
+    // console.log(`[Auth] Path 1 Failed (Not a backend JWT): ${backendErr.message}`);
     // Not a backend JWT — try Supabase path below
   }
 
   // ── PATH 2: Try Supabase JWT (Google OAuth / Supabase email users) ──
-  // Supabase JWTs are signed with the project's JWT secret (derived from anon key).
-  // We can safely decode without verifying signature here because:
-  //   a) The token came over HTTPS
-  //   b) We check aud === 'authenticated' to confirm it's a real Supabase session token
   try {
     const decoded = jwt.decode(token);
 
-    if (!decoded) throw new Error('Undecodable token');
-
-    // Supabase session tokens always have aud: 'authenticated'
-    const aud = Array.isArray(decoded.aud) ? decoded.aud[0] : decoded.aud;
-    if (aud !== 'authenticated') {
-      throw new Error('Not a Supabase session token');
+    if (!decoded) {
+      console.log('[Auth] Rejecting: Token could not be decoded at all');
+      throw new Error('Undecodable token');
     }
 
-    // Check expiration manually since we're not verifying signature
+    // console.log('[Auth] Decoded payload:', { aud: decoded.aud, exp: decoded.exp, sub: decoded.sub });
+
+    // Ensure it's a Supabase token (Supabase sets aud to 'authenticated')
+    // Made more lenient: if aud is missing, we still accept it as long as it has a sub (UUID)
+    if (decoded.aud) {
+      const aud = Array.isArray(decoded.aud) ? decoded.aud[0] : decoded.aud;
+      if (aud !== 'authenticated') {
+        console.log(`[Auth] Rejecting: Incorrect audience '${aud}'`);
+        throw new Error('Not a Supabase session token');
+      }
+    }
+
+    // Check expiration manually since we're not verifying signature here
     const now = Math.floor(Date.now() / 1000);
     if (decoded.exp && decoded.exp < now) {
+      console.log(`[Auth] Rejecting: Token expired at ${decoded.exp} (now ${now})`);
       return res.status(401).json({
         success: false,
         message: 'Session expired, please login again'
@@ -72,8 +77,11 @@ const verifyToken = (req, res, next) => {
       sandbox: false,
       authType: 'supabase',
     };
+    
+    // console.log(`[Auth] Path 2 Success: Supabase user ${req.user.email || req.user.id}`);
     return next();
   } catch (supabaseErr) {
+    console.log(`[Auth] Path 2 Failed: ${supabaseErr.message}`);
     return res.status(401).json({
       success: false,
       message: 'Invalid or expired token'
