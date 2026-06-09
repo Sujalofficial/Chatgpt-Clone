@@ -13,6 +13,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
   // Directly store se data lena (No Prop Drilling)
   const chat = useChatStore();
   const auth = useAuthStore();
+  const profile = useAuthStore(state => state.profile);
 
   return (
     <>
@@ -51,9 +52,9 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
           <div className="mt-auto pt-4 border-t border-slate-200 dark:border-white/5">
             <div className="flex items-center gap-3 p-3">
                <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">
-                 {(auth.user?.name || auth.user?.email || 'G')?.[0].toUpperCase()}
+                 {(profile?.name || auth.user?.name || auth.user?.email || 'G')?.[0].toUpperCase()}
                </div>
-               <span className="text-sm truncate">{auth.user?.name || auth.user?.email}</span>
+               <span className="text-sm truncate">{profile?.name || auth.user?.name || auth.user?.email}</span>
             </div>
             <button onClick={() => auth.signOut()} className="flex items-center gap-3 w-full p-3 text-slate-500">
                <LogOut className="w-4 h-4" />

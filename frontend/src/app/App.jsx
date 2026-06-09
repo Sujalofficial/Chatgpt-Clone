@@ -5,6 +5,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAuthStore } from './store/auth-store';
 import { useChatStore } from './store/chat-store';
+import { useSettingsStore } from './store/settings-store';
 
 import AuthPage from './components/AuthPage';
 import SettingsModal from './components/SettingsModal';
@@ -26,12 +27,24 @@ function App() {
   const currentChatId  = useChatStore(state => state.currentChatId);
   const messagesLength = useChatStore(state => state.messages.length);
 
+  const theme = useSettingsStore(state => state.theme);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const typeBox = useRef(null);
   const chatWindow = useRef(null);
+
+  // Apply dark/light class to <html> whenever theme changes
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [theme]);
 
   /**
    * SECTION: INITIALIZATION & SESSION RESTORATION
