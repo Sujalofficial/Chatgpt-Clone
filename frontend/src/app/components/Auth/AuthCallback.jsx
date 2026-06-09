@@ -9,9 +9,11 @@ export default function AuthCallback() {
   useEffect(() => {
     const token = searchParams.get('token');
     const userId = searchParams.get('userId');
+    const name = searchParams.get('name') || '';
+    const email = searchParams.get('email') || '';
 
     if (token && userId) {
-      useAuthStore.getState().setSessionFromPassport(token, { id: userId });
+      useAuthStore.getState().setSessionFromPassport(token, { id: userId, name, email });
       navigate('/');
     } else {
       navigate('/login?error=invalid_callback');

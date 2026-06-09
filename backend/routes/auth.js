@@ -36,7 +36,7 @@ router.get('/google/callback', (req, res, next) => {
         );
         
         // Redirect to frontend with token
-        res.redirect(`${CLIENT_URL}/auth-callback?token=${token}&userId=${user._id}`);
+        res.redirect(`${CLIENT_URL}/auth-callback?token=${token}&userId=${user._id}&name=${encodeURIComponent(user.name || '')}&email=${encodeURIComponent(user.email || '')}`);
     })(req, res, next);
 });
 
