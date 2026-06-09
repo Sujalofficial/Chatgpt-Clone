@@ -30,7 +30,7 @@ router.get('/google/callback', (req, res, next) => {
         
         // On success, generate JWT
         const token = jwt.sign(
-            { id: user._id, email: user.email }, 
+            { id: user._id, email: user.email, name: user.name }, 
             JWT_SECRET, 
             { expiresIn: '7d' }
         );

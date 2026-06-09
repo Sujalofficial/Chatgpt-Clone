@@ -9,10 +9,18 @@ export default function AuthCallback() {
   useEffect(() => {
     const token = searchParams.get('token');
     const userId = searchParams.get('userId');
-    const name = searchParams.get('name') || '';
-    const email = searchParams.get('email') || '';
+    let name = searchParams.get('name') || '';
+    let email = searchParams.get('email') || '';
 
     if (token && userId) {
+      // Fallback: decode JWT payload to get name/email if not in URL params
+      if (!name || !email) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          name = name || payload.name || '';
+          email = email || payload.email || '';
+        } catch (e) {}
+      }
       useAuthStore.getState().setSessionFromPassport(token, { id: userId, name, email });
       navigate('/');
     } else {
