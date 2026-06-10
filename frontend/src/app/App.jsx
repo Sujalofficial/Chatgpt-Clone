@@ -3,11 +3,13 @@
 // ---------------------------------------------------------
 
 import React, { useEffect, useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuthStore } from './store/auth-store';
 import { useChatStore } from './store/chat-store';
 import { useSettingsStore } from './store/settings-store';
 
 import AuthPage from './components/AuthPage';
+import AuthCallback from './components/Auth/AuthCallback';
 import SettingsModal from './components/SettingsModal';
 import ProfileModal from './components/ProfileModal';
 
@@ -70,6 +72,13 @@ function App() {
   /**
    * SECTION: RENDER
    */
+
+  const location = useLocation();
+
+  // ✅ ALWAYS handle OAuth callback — even if a guest session exists
+  if (location.pathname === '/auth-callback') {
+    return <AuthCallback />;
+  }
 
   if (authLoading) {
     return (
