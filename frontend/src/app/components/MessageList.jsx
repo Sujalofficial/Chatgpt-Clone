@@ -19,6 +19,7 @@ const MODEL_META = {
 };
 
 /* ── Group flat messages into "turns" ───────────────────────────────────── */
+// Produces: [{type:'user', message}, {type:'assistant', messages:[ai1,ai2]}, ...]
 function groupIntoTurns(messages) {
   const turns = [];
   let i = 0;
@@ -30,13 +31,21 @@ function groupIntoTurns(messages) {
       turns.push({ type: 'user', message: msg });
       i++;
     } else {
-      // Collect consecutive assistant messages (same turn)
+      // Collect ALL consecutive assistant messages as one turn
       const assistants = [];
       while (i < messages.length && messages[i].role === 'assistant') {
         assistants.push(messages[i]);
         i++;
       }
-      turns.push({ type: 'assistant', messages: assistants });
+      // De-duplicate by model id in case of repeated pushes
+      const seen = new Set();
+      const unique = assistants.filter(m => {
+        const key = m.model || m.id;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      turns.push({ type: 'assistant', messages: unique });
     }
   }
 

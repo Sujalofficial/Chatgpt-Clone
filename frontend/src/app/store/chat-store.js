@@ -225,26 +225,40 @@ export const useChatStore = create()(
             const result = await resp.json();
             const fullChat = result.data || result;
             const columns = fullChat.columns || {};
-            
-            const mergedMap = new Map();
-            
-            Object.entries(columns).forEach(([modelId, modelMessages]) => {
-              modelMessages.forEach((msg, index) => {
-                const msgKey = msg.role === 'user' 
-                  ? `user-${index}-${msg.content.substring(0, 50)}` 
-                  : `${modelId}-${index}-${msg.id || Date.now()}`;
 
-                if (!mergedMap.has(msgKey)) {
-                  mergedMap.set(msgKey, {
+            // ── Reconstruct proper interleaved turn order ──────────────────
+            // Each column: [userMsg, aiResp, userMsg, aiResp, ...]
+            // We walk turn-by-turn so output is: [user, ai1, ai2, user, ai1, ai2]
+            const modelIds = Object.keys(columns);
+            const finalMessages = [];
+
+            if (modelIds.length > 0) {
+              const refColumn = columns[modelIds[0]] || [];
+
+              refColumn.forEach((msg, index) => {
+                if (msg.role === 'user') {
+                  // Add user message once (deduplicated by turn index)
+                  finalMessages.push({
                     ...msg,
-                    id: msg.id || msgKey,
-                    model: msg.role === 'assistant' ? modelId : undefined,
+                    id: msg.id || `user-${index}-${Date.now()}`,
+                    model: undefined,
+                  });
+                } else if (msg.role === 'assistant') {
+                  // Add every model's response for this turn position
+                  modelIds.forEach((modelId) => {
+                    const col = columns[modelId] || [];
+                    const aiMsg = col[index];
+                    if (aiMsg && aiMsg.role === 'assistant') {
+                      finalMessages.push({
+                        ...aiMsg,
+                        id: aiMsg.id || `${modelId}-${index}-${Date.now()}`,
+                        model: modelId,
+                      });
+                    }
                   });
                 }
               });
-            });
-
-            const finalMessages = Array.from(mergedMap.values());
+            }
 
             set((state) => ({
               messages: state.currentChatId === chatId ? finalMessages : state.messages,
